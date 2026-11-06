@@ -1,183 +1,576 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cake Decorating System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background-color: #ffccd5;
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    #cakeContainer {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 12px 25px rgba(0,0,0,0.2);
-      text-align: center;
-      max-width: 450px;
-      width: 90%;
-      box-sizing: border-box;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<title>Regal Living | Premium Homes & Stays</title>
 
-    #cakeImage {
-      width: 100%;
-      max-height: 50vh;
-      object-fit: contain;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
-    }
+<style>
+:root {
+  --navy: #101c32;
+  --gold: #c6a45b;
+  --cream: #f7f6f2;
+  --white: #ffffff;
+  --text: #273246;
+}
 
-    #message {
-      padding: 12px;
-      width: 100%;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #ff69b4;
-      background-color: #ffe6f0;
-      text-align: center;
-      margin-bottom: 15px;
-      transition: opacity 0.5s ease;
-    }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    #submitBtn {
-      padding: 12px 24px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: #ff69b4;
-      color: white;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
-      transition: all 0.5s ease;
-      position: relative;
-      z-index: 2;
-      width: auto;
-      max-width: 100%;
-    }
+html {
+  scroll-behavior: smooth;
+}
 
-    #cancelBtn {
-      padding: 12px 0;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: #ff4d4d;
-      color: white;
-      cursor: pointer;
-      margin-top: 15px;
-      display: none;
-      opacity: 0;
-      width: 70%; /* habaan */
-      text-align: center;
-      transition: opacity 0.5s ease;
-    }
+body {
+  font-family: Arial, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+}
 
-    .fade-in {
-      animation: fadeIn 0.5s forwards;
-    }
+/* NAVIGATION */
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 24px 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  color: white;
+}
 
-    @media screen and (max-width: 480px) {
-      #cakeContainer { padding: 20px; }
-      #message { font-size: 16px; }
-      #submitBtn, #cancelBtn { padding: 10px 20px; font-size: 14px; width: 80%; }
-    }
-  </style>
+.logo {
+  font-size: 23px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+.logo span {
+  color: var(--gold);
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+/* HERO */
+
+.hero {
+  min-height: 650px;
+  height: 90vh;
+  background:
+    linear-gradient(rgba(5,13,27,.38), rgba(5,13,27,.55)),
+    url("regal-cover.jpg") center center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  padding: 100px 20px 50px;
+}
+
+.hero-content {
+  max-width: 850px;
+}
+
+.hero-label {
+  color: var(--gold);
+  letter-spacing: 5px;
+  font-size: 13px;
+  margin-bottom: 22px;
+}
+
+.hero h1 {
+  font-size: clamp(40px, 7vw, 76px);
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 17px;
+  line-height: 1.8;
+  color: #eeeeee;
+  max-width: 650px;
+  margin: auto;
+}
+
+.gold-line {
+  width: 65px;
+  height: 3px;
+  background: var(--gold);
+  margin: 28px auto;
+}
+
+.main-btn {
+  display: inline-block;
+  margin-top: 25px;
+  padding: 15px 30px;
+  background: var(--gold);
+  color: var(--navy);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border-radius: 3px;
+  transition: .3s;
+}
+
+.main-btn:hover {
+  background: white;
+}
+
+/* GALLERY */
+
+section {
+  padding: 85px 7%;
+}
+
+.section-heading {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-heading small {
+  color: var(--gold);
+  letter-spacing: 4px;
+  font-weight: bold;
+}
+
+.section-heading h2 {
+  font-size: 32px;
+  color: var(--navy);
+  margin-top: 12px;
+}
+
+.gallery {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding: 5px 2px 18px;
+  scrollbar-width: thin;
+}
+
+.gallery img {
+  flex: 0 0 230px;
+  width: 230px;
+  height: 155px;
+  object-fit: cover;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.gallery img:hover {
+  transform: translateY(-5px);
+}
+
+/* ABOUT */
+
+.about {
+  background: white;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 55px;
+  align-items: center;
+}
+
+.about-image img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.about-text small {
+  color: var(--gold);
+  letter-spacing: 4px;
+  font-weight: bold;
+}
+
+.about-text h2 {
+  color: var(--navy);
+  font-size: 35px;
+  margin: 18px 0;
+  line-height: 1.3;
+}
+
+.about-text p {
+  color: #687080;
+  line-height: 1.9;
+  font-size: 15px;
+}
+
+/* RENTAL OPTIONS */
+
+.rentals {
+  background: var(--cream);
+}
+
+.rental-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.rental-card {
+  background: white;
+  padding: 35px 25px;
+  text-align: center;
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 5px 20px rgba(0,0,0,.05);
+}
+
+.rental-card .number {
+  color: var(--gold);
+  font-size: 30px;
+  margin-bottom: 18px;
+}
+
+.rental-card h3 {
+  color: var(--navy);
+  margin-bottom: 15px;
+  font-size: 19px;
+}
+
+.rental-card p {
+  font-size: 14px;
+  color: #737b89;
+  line-height: 1.8;
+}
+
+/* AMENITIES */
+
+.amenities {
+  background: var(--navy);
+  color: white;
+}
+
+.amenities .section-heading h2 {
+  color: white;
+}
+
+.amenity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  text-align: center;
+}
+
+.amenity {
+  padding: 25px 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 5px;
+}
+
+.amenity .symbol {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.amenity p {
+  font-size: 13px;
+  color: #e0e2e7;
+}
+
+/* CONTACT */
+
+.contact {
+  background: white;
+  text-align: center;
+}
+
+.contact h2 {
+  color: var(--navy);
+  font-size: 34px;
+  margin: 15px 0;
+}
+
+.contact p {
+  color: #737b89;
+  line-height: 1.8;
+}
+
+/* FOOTER */
+
+footer {
+  background: #0b1425;
+  color: white;
+  text-align: center;
+  padding: 30px 15px;
+}
+
+footer strong {
+  color: var(--gold);
+  letter-spacing: 3px;
+}
+
+footer p {
+  font-size: 12px;
+  color: #aab0bd;
+  margin-top: 12px;
+}
+
+/* MOBILE */
+
+@media(max-width: 768px) {
+  nav {
+    padding: 20px 5%;
+  }
+
+  .logo {
+    font-size: 17px;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-links a {
+    font-size: 10px;
+  }
+
+  .hero {
+    min-height: 600px;
+    height: 80vh;
+  }
+
+  .hero h1 {
+    letter-spacing: 2px;
+  }
+
+  section {
+    padding: 65px 6%;
+  }
+
+  .about {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .about-image img {
+    height: 270px;
+  }
+
+  .rental-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .amenity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery img {
+    flex-basis: 190px;
+    width: 190px;
+    height: 135px;
+  }
+}
+</style>
 </head>
+
 <body>
 
-<div id="cakeContainer">
-  <img id="cakeImage" src="" alt="Cake Design">
-  <input type="text" id="message" placeholder="Type your message">
-  <button id="submitBtn" onclick="submitForm()">Submit</button>
-  
-</div>
+<nav>
+  <div class="logo">REGAL <span>LIVING</span></div>
 
-<script>
-let design = "cake1"; 
+  <div class="nav-links">
+    <a href="#gallery">GALLERY</a>
+    <a href="#about">ABOUT</a>
+    <a href="#rentals">STAYS</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+</nav>
 
-// Load cake design
-window.onload = function() {
-  const params = new URLSearchParams(window.location.search);
-  design = params.get("design");
-  design = design ? design.trim().toLowerCase() : "cake1";
+<!-- HERO -->
 
-  const cakeImage = document.getElementById("cakeImage");
-  const designs = {
-    cake1: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake1.png",
-    cake2: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake2.png",
-    cake3: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake3.png",
-    cake4: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake4.png",
-    cake5: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake5.png",
-    cake6: "https://raw.githubusercontent.com/virtus000/cake-decorating-system/main/cake6.png"
-  };
+<header class="hero">
+  <div class="hero-content">
+    <div class="hero-label">WELCOME TO REGAL LIVING</div>
 
-  cakeImage.src = designs[design] || designs["cake1"];
-};
+    <h1>THE REGAL HOMES</h1>
 
-// Submit form
-function submitForm() {
-  const messageInput = document.getElementById("message");
-  const btn = document.getElementById("submitBtn");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const message = messageInput.value;
+    <div class="gold-line"></div>
 
-  if(!message) { alert("Please enter a message"); return; }
+    <p>
+      A place to stay, relax, and feel at home.
+      Discover comfortable living and memorable stays
+      with The Regal Homes.
+    </p>
 
-  // Send to Google Apps Script
-  fetch("https://script.google.com/macros/s/AKfycbzsa8NiL7sAxnTTCSLRh2C6bF5LfimD9fMkwnIps2hzZFnt2WCmkpl-mV1L7H5SiWg/exec", {
-    method: "POST",
-    body: JSON.stringify({ message: message, design: design })
-  }).then(res => res.text())
-    .then(data => {
-      // Fade out textbox
-      messageInput.style.opacity = 0;
+    <a href="#contact" class="main-btn">
+      EXPLORE OUR PROPERTY
+    </a>
+  </div>
+</header>
 
-      // Resize button to match textbox width
-      btn.style.width = "100%";
-      btn.style.height = messageInput.offsetHeight + "px";
-      btn.textContent = "Submitted Successfully!";
+<!-- GALLERY -->
 
-      // Move button to textbox position
-      btn.style.transform = "translateY(-" + (messageInput.offsetHeight + 15) + "px)";
+<section id="gallery">
 
-      messageInput.value = "";
-    })
-    .catch(err => { alert("Submission failed"); console.error(err); });
-}
+  <div class="section-heading">
+    <small>OUR PROPERTY</small>
+    <h2>Explore the Interiors</h2>
+  </div>
 
-// Reset form
-function resetForm() {
-  const messageInput = document.getElementById("message");
-  const btn = document.getElementById("submitBtn");
+  <div class="gallery">
+    <img src="interior1.jpg" alt="Living room">
+    <img src="interior2.jpg" alt="Bedroom">
+    <img src="interior3.jpg" alt="Kitchen">
+    <img src="interior4.jpg" alt="Dining area">
+    <img src="interior5.jpg" alt="Property interior">
+    <img src="interior6.jpg" alt="Property interior">
+  </div>
 
-  // Reset button
-  btn.textContent = "Submit";
-  btn.style.transform = "translateY(0px)";
-  btn.style.width = "auto";
-  btn.style.height = "auto";
+</section>
 
-  // Show message box again
-  messageInput.style.opacity = 1;
+<!-- ABOUT -->
 
- 
-}
-</script>
+<section class="about" id="about">
+
+  <div class="about-image">
+    <img src="interior1.jpg" alt="Regal Homes interior">
+  </div>
+
+  <div class="about-text">
+    <small>ABOUT THE REGAL HOMES</small>
+
+    <h2>Comfort Meets Modern Living</h2>
+
+    <p>
+      Welcome to The Regal Homes, where comfort,
+      convenience, and quality living come together.
+
+      Whether you are looking for a relaxing short stay,
+      a temporary home, or a long-term residence,
+      we aim to provide a welcoming place for you.
+    </p>
+
+    <a href="#contact" class="main-btn">
+      MAKE AN INQUIRY
+    </a>
+  </div>
+
+</section>
+
+<!-- RENTAL OPTIONS -->
+
+<section class="rentals" id="rentals">
+
+  <div class="section-heading">
+    <small>FLEXIBLE ACCOMMODATION</small>
+    <h2>Find Your Ideal Stay</h2>
+  </div>
+
+  <div class="rental-grid">
+
+    <div class="rental-card">
+      <div class="number">01</div>
+      <h3>Short-Term Stay</h3>
+      <p>
+        A comfortable accommodation for vacations,
+        weekend getaways, and temporary visits.
+      </p>
+    </div>
+
+    <div class="rental-card">
+      <div class="number">02</div>
+      <h3>Apartment Rental</h3>
+      <p>
+        A convenient living space for individuals,
+        couples, and families.
+      </p>
+    </div>
+
+    <div class="rental-card">
+      <div class="number">03</div>
+      <h3>Long-Term Residence</h3>
+      <p>
+        A welcoming home for those looking
+        for a longer-term place to stay.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- AMENITIES -->
+
+<section class="amenities">
+
+  <div class="section-heading">
+    <small>THE EXPERIENCE</small>
+    <h2>Property Highlights</h2>
+  </div>
+
+  <div class="amenity-grid">
+
+    <div class="amenity">
+      <div class="symbol">🏠</div>
+      <p>Comfortable Living</p>
+    </div>
+
+    <div class="amenity">
+      <div class="symbol">🛏️</div>
+      <p>Private Spaces</p>
+    </div>
+
+    <div class="amenity">
+      <div class="symbol">🍽️</div>
+      <p>Dining Area</p>
+    </div>
+
+    <div class="amenity">
+      <div class="symbol">📍</div>
+      <p>Convenient Location</p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- CONTACT -->
+
+<section class="contact" id="contact">
+
+  <div class="section-heading">
+    <small>GET IN TOUCH</small>
+    <h2>Find Your Next Stay</h2>
+  </div>
+
+  <p>
+    Interested in staying at The Regal Homes?
+    Contact us for property details, availability,
+    and rental inquiries.
+  </p>
+
+  <a href="mailto:YOUR-EMAIL@example.com" class="main-btn">
+    CONTACT US
+  </a>
+
+</section>
+
+<footer>
+  <strong>THE REGAL HOMES</strong>
+  <p>REGAL LIVING · A PLACE TO CALL HOME</p>
+  <p>© 2026 The Regal Homes. All rights reserved.</p>
+</footer>
 
 </body>
 </html>
