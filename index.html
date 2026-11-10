@@ -13,11 +13,27 @@
 .property-logo svg{width:30px;height:30px}
 .property-logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:white}
 @media(max-width:380px){.property-logo{width:64px;height:64px;flex-basis:64px}.property-head h2{font-size:20px}}
+
+ /* Stationary property content and cinematic photo-only transitions */
+ .gallery{position:relative;height:255px;overflow:hidden;background:linear-gradient(135deg,#e7edf2,#cbd6e1);touch-action:pan-y;user-select:none}
+ .gallery-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#8798aa}
+ .gallery-placeholder svg{width:42px;height:42px;opacity:.7}
+ .gallery-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.045);transition:opacity 650ms ease-in-out,transform 950ms cubic-bezier(.22,1,.36,1);pointer-events:none}
+ .gallery-image.active{opacity:1;transform:scale(1);z-index:1}
+ .gallery-dots{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;padding:4px 18px 22px}
+ .gallery-dot{width:7px;height:7px;padding:0;border:0;border-radius:99px;background:#cbd3dd;cursor:pointer;transition:width .3s ease,background .3s ease}
+ .gallery-dot.active{width:22px;background:var(--gold)}
+ .gallery-dot:focus-visible{outline:2px solid #567bb0;outline-offset:4px}
+ .stationary-details{min-height:0;padding:20px 20px 18px}
+ .stationary-details h3{font-size:20px;margin:0 0 9px}
+ .stationary-details p{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 14px}
+ @media(min-width:720px){.gallery{height:300px}}
+ @media(prefers-reduced-motion:reduce){.gallery-image,.gallery-dot{transition:none}}
 </style>
 </head>
 <body>
-<header><nav><strong>REGAL <span>LIVING</span></strong><a href="#properties">PROPERTIES</a><a href="#contact">CONTACT</a></nav><div class="hero"><div class="eyebrow">Premium homes & stays</div><h1>Find your place<br>to stay.</h1><p>Browse our properties and swipe through units to view photos and details.</p></div></header>
-<main id="properties"><div class="intro"><div class="eyebrow">Our Collection</div><h2>Explore Our Properties</h2><p>Swipe left or right on a unit to browse its photos and details together.</p></div><div id="list"></div></main>
+<header><nav><strong>REGAL <span>LIVING</span></strong><a href="#properties">PROPERTIES</a><a href="#contact">CONTACT</a></nav><div class="hero"><div class="eyebrow">Premium homes & stays</div><h1>Find your place<br>to stay.</h1><p>Explore our properties and discover each space through its photo gallery.</p></div></header>
+<main id="properties"><div class="intro"><div class="eyebrow">Our Collection</div><h2>Explore Our Properties</h2><p>Swipe left or right on a photo to explore the gallery.</p></div><div id="list"></div></main>
 <section class="contact" id="contact"><div class="eyebrow">Get in touch</div><h2>Interested in a unit?</h2><p>Contact Regal Living for current availability and confirmed rental rates.</p><button class="btn" type="button" disabled style="border:0;opacity:.65;cursor:not-allowed">HELP DESK · COMING SOON</button></section><footer>© 2026 Regal Living · A Place to Call Home</footer>
 <div class="dialog-backdrop" id="dialogBackdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><button class="close" type="button" id="dialogClose" aria-label="Close">×</button><h2 id="dialogTitle"></h2><div id="dialogBody"></div></section></div>
 <script>
@@ -77,54 +93,144 @@ function showBooking(property,unit){
 }
 const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 18 6-6 4 4 3-3 5 5"/></svg>';
 function element(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el}
-properties.forEach((property)=>{
- const section=element('section','property');
- const head=element('div','property-head');
- const heading=element('div','property-heading');
- heading.append(element('div','eyebrow',property.type),element('h2','',property.name),element('p','owner','Property Owner: '+property.owner));
- const logo=element('div','property-logo');
- logo.setAttribute('aria-label','Logo placeholder for '+property.name);
- logo.innerHTML=icon;
- const logoImg=document.createElement('img');
- logoImg.src = property.logo || `images/${property.slug}-Logo.jpg`;
- logoImg.alt=property.name+' logo';
- logoImg.loading='lazy';
- logoImg.onerror=()=>logoImg.remove();
- logo.append(logoImg);
- head.append(heading,logo);section.append(head);
- const carousel=element('div','carousel');const track=element('div','track');const dots=element('div','dots');const count=element('span','count');const prev=element('button','arrow','‹'),next=element('button','arrow','›');prev.setAttribute('aria-label', 'Previous photo or unit');
-next.setAttribute('aria-label', 'Next photo or unit');
- 
-const slides = [];
-const buttons = [];
+properties.forEach(property => {
+  const section = element('section', 'property');
+  const head = element('div', 'property-head');
+  const heading = element('div', 'property-heading');
+  heading.append(
+    element('div', 'eyebrow', property.type),
+    element('h2', '', property.name),
+    element('p', 'owner', 'Property Owner: ' + property.owner)
+  );
 
-const units = property.slug === 'regal-homestay'
-  ? property.photos.map((photo, i) => ({
-      name: 'The Regal Homestay',
-      description: 'Explore photos of The Regal Homestay.',
-      image: photo,
-      hourly: 'To be updated',
-      monthly: 'To be updated',
-      photoNumber: i + 1
-    }))
-  : Array.from({ length: property.units }, (_, i) => ({
-      name: 'Unit ' + (i + 1),
-      description: 'Unit photos, room features, and verified details will be added soon.',
-      image: 'images/' + property.slug + '-unit-' + (i + 1) + '.jpg',
-      hourly: 'To be updated',
-      monthly: 'To be updated'
-    }));
+  const logo = element('div', 'property-logo');
+  logo.innerHTML = icon;
+  const logoImg = document.createElement('img');
+  logoImg.src = property.logo || `images/${property.slug}-Logo.jpg`;
+  logoImg.alt = property.name + ' logo';
+  logoImg.loading = 'lazy';
+  logoImg.onerror = () => logoImg.remove();
+  logo.append(logoImg);
+  head.append(heading, logo);
+  section.append(head);
 
- units.forEach((unit,i)=>{const slide=element('article','slide');const photo=element('div','photo');photo.innerHTML=icon;const label = element(
-  'span',
-  'photo-label',
-  property.slug === 'regal-homestay'
-    ? `Photo ${unit.photoNumber} of ${property.photos.length}`
-    : 'Unit photo placeholder'
-);photo.append(label);if(unit.image){const img=document.createElement('img');img.src=unit.image;img.alt=property.name+' '+unit.name;img.loading='lazy';img.onerror=()=>img.remove();photo.append(img)}const details=element('div','details');details.append(element('h3','',unit.name),element('p','',unit.description));const rates=element('div','rates');[['Hourly Rate',unit.hourly],['Monthly Rate',unit.monthly]].forEach(([name,value])=>{const cell=element('div');cell.append(element('small','',name),element('b','',value));rates.append(cell)});details.append(rates);const actions=element('div','unit-actions');const view=element('button','','View Details');view.type='button';view.onclick=()=>showDetails(property,unit);const book=element('button','primary','Book Now');book.type='button';book.onclick=()=>showBooking(property,unit);actions.append(view,book);details.append(actions);slide.append(photo,details);track.append(slide);slides.push(slide);const dot=element('button','dot');dot.setAttribute('aria-label','Show '+unit.name);dot.onclick=()=>go(i);dots.append(dot);buttons.push(dot)});
- carousel.append(track);section.append(carousel);const controls=element('div','controls');const arrows=element('div','arrows');arrows.append(count,prev,next);controls.append(dots,arrows);section.append(controls);document.getElementById('list').append(section);
- let current=0,startX=null;function go(i){current=Math.max(0,Math.min(units.length-1,i));track.style.transform=`translateX(-${current*100}%)`;slides.forEach((s,j)=>s.classList.toggle('active',j===current));buttons.forEach((b,j)=>{b.classList.toggle('active',j===current);b.setAttribute('aria-current',j===current?'true':'false')});count.textContent=`${current+1} / ${units.length}`;prev.disabled=current===0;next.disabled=current===units.length-1}
- prev.onclick=()=>go(current-1);next.onclick=()=>go(current+1);carousel.addEventListener('touchstart',e=>{startX=e.changedTouches[0].clientX},{passive:true});carousel.addEventListener('touchend',e=>{if(startX===null)return;const delta=e.changedTouches[0].clientX-startX;if(Math.abs(delta)>45)go(current+(delta<0?1:-1));startX=null},{passive:true});let mouseX=null;carousel.addEventListener('mousedown',e=>{mouseX=e.clientX});carousel.addEventListener('mouseup',e=>{if(mouseX===null)return;const delta=e.clientX-mouseX;if(Math.abs(delta)>45)go(current+(delta<0?1:-1));mouseX=null});go(0);
+  // For The Regal Homestay, 15 photos belong to one stationary property card.
+  // Other properties retain their existing sample unit inventory.
+  const homestay = property.slug === 'regal-homestay';
+  const entries = homestay
+    ? property.photos.map((image, i) => ({
+        name: property.name,
+        description: 'Explore photos of The Regal Homestay.',
+        image,
+        hourly: 'To be updated',
+        monthly: 'To be updated'
+      }))
+    : Array.from({length: property.units}, (_, i) => ({
+        name: 'Unit ' + (i + 1),
+        description: 'Unit photos, room features, and verified details will be added soon.',
+        image: `images/${property.slug}-unit-${i + 1}.jpg`,
+        hourly: 'To be updated',
+        monthly: 'To be updated'
+      }));
+
+  // Only the photo area changes when swiping.
+  const gallery = element('div', 'gallery');
+  gallery.setAttribute('aria-label', property.name + ' photo gallery');
+  const placeholder = element('div', 'gallery-placeholder');
+  placeholder.innerHTML = icon;
+  gallery.append(placeholder);
+
+  const photos = [];
+  entries.forEach((entry, i) => {
+    const img = document.createElement('img');
+    img.className = 'gallery-image';
+    img.src = entry.image;
+    img.alt = property.name + (homestay ? ` photo ${i + 1}` : ` ${entry.name}`);
+    img.loading = i === 0 ? 'eager' : 'lazy';
+    img.decoding = 'async';
+    img.onerror = () => img.remove();
+    gallery.append(img);
+    photos.push(img);
+  });
+  section.append(gallery);
+
+  // Details and buttons stay outside the animated photo gallery.
+  const details = element('div', 'stationary-details');
+  const unitTitle = element('h3');
+  const description = element('p');
+  const rates = element('div', 'rates');
+  const hourlyCell = element('div');
+  hourlyCell.append(element('small', '', 'Hourly Rate'));
+  const hourlyValue = element('b');
+  hourlyCell.append(hourlyValue);
+  const monthlyCell = element('div');
+  monthlyCell.append(element('small', '', 'Monthly Rate'));
+  const monthlyValue = element('b');
+  monthlyCell.append(monthlyValue);
+  rates.append(hourlyCell, monthlyCell);
+
+  const actions = element('div', 'unit-actions');
+  const view = element('button', '', 'View Details');
+  view.type = 'button';
+  const book = element('button', 'primary', 'Book Now');
+  book.type = 'button';
+  actions.append(view, book);
+  details.append(unitTitle, description, rates, actions);
+  section.append(details);
+
+  const dots = element('div', 'gallery-dots');
+  dots.setAttribute('aria-label', 'Photo navigation');
+  const dotButtons = [];
+  entries.forEach((entry, i) => {
+    const dot = element('button', 'gallery-dot');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', homestay ? `Show photo ${i + 1}` : `Show ${entry.name}`);
+    dot.onclick = () => go(i);
+    dots.append(dot);
+    dotButtons.push(dot);
+  });
+  section.append(dots);
+  document.getElementById('list').append(section);
+
+  let current = 0;
+  function go(index) {
+    current = (index + entries.length) % entries.length;
+    photos.forEach((photo, i) => photo.classList.toggle('active', i === current));
+    dotButtons.forEach((dot, i) => {
+      dot.classList.toggle('active', i === current);
+      dot.setAttribute('aria-current', i === current ? 'true' : 'false');
+    });
+    const entry = entries[current];
+    unitTitle.textContent = entry.name;
+    description.textContent = entry.description;
+    hourlyValue.textContent = entry.hourly;
+    monthlyValue.textContent = entry.monthly;
+    view.onclick = () => showDetails(property, entry);
+    book.onclick = () => showBooking(property, entry);
+  }
+
+  let startX = null;
+  gallery.addEventListener('touchstart', e => {
+    startX = e.changedTouches[0].clientX;
+  }, {passive:true});
+  gallery.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const delta = e.changedTouches[0].clientX - startX;
+    if (Math.abs(delta) > 45) go(current + (delta < 0 ? 1 : -1));
+    startX = null;
+  }, {passive:true});
+
+  let mouseX = null;
+  gallery.addEventListener('mousedown', e => { mouseX = e.clientX; });
+  gallery.addEventListener('mouseup', e => {
+    if (mouseX === null) return;
+    const delta = e.clientX - mouseX;
+    if (Math.abs(delta) > 45) go(current + (delta < 0 ? 1 : -1));
+    mouseX = null;
+  });
+  gallery.addEventListener('dragstart', e => e.preventDefault());
+
+  go(0);
 });
 </script>
 </body></html>
