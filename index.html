@@ -34,6 +34,7 @@
  .unit-select-label{display:block;padding:0 20px 15px;font-size:12px;font-weight:bold}
  .unit-select{display:block;width:100%;margin-top:8px;border:1px solid #cbd3dd;border-radius:8px;padding:11px;background:white;color:var(--navy);font:inherit}
  .availability{font-size:12px!important;color:var(--muted)}
+.unit-actions button:disabled{opacity:.48;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -132,14 +133,16 @@ function makePropertyCard(property) {
     const summary = element('p','property-summary',property.description);
     section.append(summary);
   }
-  if (!property.units.length) {
+  const hasPublishedUnits=Array.isArray(property.units) && property.units.length>0;
+  const isHomestay=local && local.slug==='regal-homestay';
+  if (!hasPublishedUnits && !isHomestay) {
     section.append(element('p','empty-units','No published units yet.'));
     return section;
   }
 
   // Owner-edited unit data comes only from the public API.
   // The existing GitHub images remain static until photo management is added.
-  const units = property.units;
+  const units = hasPublishedUnits ? property.units : [{name:'The Regal Homestay',description:'Explore our photo gallery. Unit information and rental rates will be published soon.',hourlyRate:null,monthlyRate:null,status:'Not yet published'}];
   let unitIndex = 0;
   if (units.length > 1) {
     const selectLabel = element('label','unit-select-label','Choose a unit');
@@ -178,50 +181,67 @@ function makePropertyCard(property) {
   const view = element('button','','View Details'); view.type='button';
   const book = element('button','primary','Book Now'); book.type='button';
   actions.append(view,book);
+  if(!hasPublishedUnits){view.disabled=true;book.disabled=true;view.title='Unit details are not published yet';book.title='Booking will be available once units are published';}
   details.append(unitTitle,description,availability,rates,actions);
   section.append(gallery,details,dots);
 
-  let photoIndex=0, photos=[], dotButtons=[];
-  function photoPaths() {
-    if (!local) return [];
-    if (local.slug === 'regal-homestay') return local.photos || [];
-    return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
-  }
-  function go(index) {
-    if (!photos.length) return;
-    photoIndex=(index+photos.length)%photos.length;
-    photos.forEach((p,i)=>p.classList.toggle('active',i===photoIndex));
-    dotButtons.forEach((d,i)=>{
-      d.classList.toggle('active',i===photoIndex);
-      d.setAttribute('aria-current',i===photoIndex?'true':'false');
-    });
-  }
-  function rebuildPhotos() {
-    photos.forEach(p=>p.remove());
-    photos=[]; dotButtons=[]; dots.replaceChildren();
-    photoPaths().forEach((path,i)=>{
-      const img=document.createElement('img');
-      img.className='gallery-image'; img.src=path;
-      img.alt=property.name+' photo '+(i+1);
-      img.loading=i===0?'eager':'lazy'; img.decoding='async';
-      img.onerror=()=>img.remove();
-      gallery.append(img); photos.push(img);
-      if (photoPaths().length>1) {
-        const dot=element('button','gallery-dot');
-        dot.type='button'; dot.setAttribute('aria-label','Show photo '+(i+1));
-        dot.onclick=()=>go(i);
-        dots.append(dot);dotButtons.push(dot);
-      }
-    });
-    photoIndex=0;go(0);
-  }
+   let photoIndex=0, photos=[], dotButtons=[];
+   function photoPaths() {
+     if (!local) return [];
+     if (local.slug === 'regal-homestay') return local.photos || [];
+     return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
+   }
+   function go(index) {
+     if (!photos.length) return;
+     photoIndex=(index+photos.length)%photos.length;
+     photos.forEach((p,i)=>{
+       const active=i===photoIndex;
+       p.classList.toggle('active',active);
+       p.setAttribute('aria-hidden',active?'false':'true');
+     });
+     dotButtons.forEach((d,i)=>{
+       const active=i===photoIndex;
+       d.classList.toggle('active',active);
+       d.setAttribute('aria-current',active?'true':'false');
+       d.setAttribute('aria-label',`Photo ${i+1} of ${photos.length}`);
+     });
+   }
+   function rebuildPhotos() {
+     photos.forEach(p=>p.remove());
+     photos=[]; dotButtons=[]; dots.replaceChildren();
+     const paths=photoPaths();
+     paths.forEach((path,i)=>{
+       const img=document.createElement('img');
+       img.className='gallery-image';
+       img.src=path;
+       img.alt=property.name+' photo '+(i+1);
+       img.loading=i<2?'eager':'lazy';
+       img.decoding='async';
+       img.onerror=()=>{
+         img.classList.remove('active');
+         if(i===photoIndex){
+           const next=photos.findIndex((p,j)=>j!==i && p.complete && p.naturalWidth>0);
+           if(next>=0)go(next);
+         }
+       };
+       gallery.append(img); photos.push(img);
+       if (paths.length>1) {
+         const dot=element('button','gallery-dot');
+         dot.type='button';
+         dot.setAttribute('aria-label','Photo '+(i+1));
+         dot.onclick=()=>go(i);
+         dots.append(dot);dotButtons.push(dot);
+       }
+     });
+     photoIndex=0;go(0);
+   }
   function updateUnit() {
     const unit=units[unitIndex];
     unitTitle.textContent=unit.name;
     description.textContent=unit.description || 'Details to be updated.';
     hourlyValue.textContent=money(unit.hourlyRate);
     monthlyValue.textContent=money(unit.monthlyRate);
-    availability.textContent='Unit status: '+(unit.status || 'To be updated');
+    availability.textContent=hasPublishedUnits ? 'Unit status: '+(unit.status || 'To be updated') : 'Unit information not yet published';
     const displayUnit={name:unit.name,description:unit.description || '',
       hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate)};
     view.onclick=()=>showDetails(property,displayUnit);
@@ -245,6 +265,8 @@ function makePropertyCard(property) {
     mouseX=null;
   });
   gallery.addEventListener('dragstart',e=>e.preventDefault());
+  gallery.tabIndex=0;
+  gallery.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();go(photoIndex+1)}if(e.key==='ArrowLeft'){e.preventDefault();go(photoIndex-1)}});
   updateUnit();
   return section;
 }
