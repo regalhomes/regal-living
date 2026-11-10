@@ -29,18 +29,23 @@
  .stationary-details p{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 14px}
  @media(min-width:720px){.gallery{height:300px}}
  @media(prefers-reduced-motion:reduce){.gallery-image,.gallery-dot{transition:none}}
+ .property-summary,.empty-units,.load-status{padding:0 20px 18px;color:var(--muted);font-size:14px;line-height:1.6}
+ .load-status{text-align:center;padding:30px 12px}
+ .unit-select-label{display:block;padding:0 20px 15px;font-size:12px;font-weight:bold}
+ .unit-select{display:block;width:100%;margin-top:8px;border:1px solid #cbd3dd;border-radius:8px;padding:11px;background:white;color:var(--navy);font:inherit}
+ .availability{font-size:12px!important;color:var(--muted)}
 </style>
 </head>
 <body>
 <header><nav><strong>REGAL <span>LIVING</span></strong><a href="#properties">PROPERTIES</a><a href="#contact">CONTACT</a></nav><div class="hero"><div class="eyebrow">Premium homes & stays</div><h1>Find your place<br>to stay.</h1><p>Explore our properties and discover each space through its photo gallery.</p></div></header>
-<main id="properties"><div class="intro"><div class="eyebrow">Our Collection</div><h2>Explore Our Properties</h2><p>Swipe left or right on a photo to explore the gallery.</p></div><div id="list"></div></main>
+<main id="properties"><div class="intro"><div class="eyebrow">Our Collection</div><h2>Explore Our Properties</h2><p>Swipe photos to explore each space. Unit information is updated from our management system.</p></div><div id="list"></div></main>
 <section class="contact" id="contact"><div class="eyebrow">Get in touch</div><h2>Interested in a unit?</h2><p>Contact Regal Living for current availability and confirmed rental rates.</p><button class="btn" type="button" disabled style="border:0;opacity:.65;cursor:not-allowed">HELP DESK · COMING SOON</button></section><footer>© 2026 Regal Living · A Place to Call Home</footer>
 <div class="dialog-backdrop" id="dialogBackdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><button class="close" type="button" id="dialogClose" aria-label="Close">×</button><h2 id="dialogTitle"></h2><div id="dialogBody"></div></section></div>
 <script>
 // DEMO UNITS ONLY. Replace with verified unit inventory and rates later.
 // Upload photos under images/ using the filenames defined below.
 // Missing images display the existing placeholders automatically.
-const properties=[
+const LOCAL_PROPERTIES=[
 {
   slug: 'regal-homestay',
   name: 'The Regal Homestay',
@@ -58,6 +63,8 @@ const properties=[
 {slug:'juanlager-apartment',name:'JuanLager Apartment',owner:'JuanLager Apartment',type:'Studio Type',units:2},
 {slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',units:2}
 ];
+// Paste your deployed Google Apps Script /exec URL below (not /dev).
+const PUBLIC_API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
 const backdrop=document.getElementById('dialogBackdrop');
 const dialogTitle=document.getElementById('dialogTitle');
 const dialogBody=document.getElementById('dialogBody');
@@ -70,11 +77,11 @@ function addLine(parent,label,value){const p=element('p');const strong=element('
 function showDetails(property,unit){
  dialogBody.replaceChildren();showDialog(unit.name+' · Details');
  addLine(dialogBody,'Property',property.name);
- addLine(dialogBody,'Owner',property.owner);
+ 
  addLine(dialogBody,'Description',unit.description);
  addLine(dialogBody,'Hourly rate',unit.hourly);
  addLine(dialogBody,'Monthly rate',unit.monthly);
- addLine(dialogBody,'Property address','To be updated');
+ addLine(dialogBody,'Property address',property.location || 'To be updated');
  addLine(dialogBody,'Owner contact','Not yet published');
  addLine(dialogBody,'Amenities','To be updated');
 }
@@ -93,144 +100,181 @@ function showBooking(property,unit){
 }
 const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 18 6-6 4 4 3-3 5 5"/></svg>';
 function element(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el}
-properties.forEach(property => {
-  const section = element('section', 'property');
-  const head = element('div', 'property-head');
-  const heading = element('div', 'property-heading');
-  heading.append(
-    element('div', 'eyebrow', property.type),
-    element('h2', '', property.name),
-    element('p', 'owner', 'Property Owner: ' + property.owner)
-  );
+const list = document.getElementById('list');
+const money = n => n === null || n === undefined ? 'To be updated' : '₱' + Number(n).toLocaleString('en-PH');
+const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+const localFor = p => LOCAL_PROPERTIES.find(c => norm(c.name) === norm(p.name));
+const statusLine = element('p','load-status','Loading published properties…');
+list.append(statusLine);
 
-  const logo = element('div', 'property-logo');
+function makePropertyCard(property) {
+  const local = localFor(property);
+  const section = element('section','property');
+  const head = element('div','property-head');
+  const heading = element('div','property-heading');
+  heading.append(element('div','eyebrow',local ? local.type : 'Property'),
+    element('h2','',property.name),
+    element('p','owner',property.location || 'Location to be updated'));
+  const logo = element('div','property-logo');
   logo.innerHTML = icon;
-  const logoImg = document.createElement('img');
-  logoImg.src = property.logo || `images/${property.slug}-Logo.jpg`;
-  logoImg.alt = property.name + ' logo';
-  logoImg.loading = 'lazy';
-  logoImg.onerror = () => logoImg.remove();
-  logo.append(logoImg);
-  head.append(heading, logo);
+  if (local) {
+    const img = document.createElement('img');
+    img.src = local.logo || `images/${local.slug}-Logo.jpg`;
+    img.alt = property.name + ' logo';
+    img.loading = 'lazy';
+    img.onerror = () => img.remove();
+    logo.append(img);
+  }
+  head.append(heading,logo);
   section.append(head);
 
-  // For The Regal Homestay, 15 photos belong to one stationary property card.
-  // Other properties retain their existing sample unit inventory.
-  const homestay = property.slug === 'regal-homestay';
-  const entries = homestay
-    ? property.photos.map((image, i) => ({
-        name: property.name,
-        description: 'Explore photos of The Regal Homestay.',
-        image,
-        hourly: 'To be updated',
-        monthly: 'To be updated'
-      }))
-    : Array.from({length: property.units}, (_, i) => ({
-        name: 'Unit ' + (i + 1),
-        description: 'Unit photos, room features, and verified details will be added soon.',
-        image: `images/${property.slug}-unit-${i + 1}.jpg`,
-        hourly: 'To be updated',
-        monthly: 'To be updated'
-      }));
-
-  // Only the photo area changes when swiping.
-  const gallery = element('div', 'gallery');
-  gallery.setAttribute('aria-label', property.name + ' photo gallery');
-  const placeholder = element('div', 'gallery-placeholder');
-  placeholder.innerHTML = icon;
-  gallery.append(placeholder);
-
-  const photos = [];
-  entries.forEach((entry, i) => {
-    const img = document.createElement('img');
-    img.className = 'gallery-image';
-    img.src = entry.image;
-    img.alt = property.name + (homestay ? ` photo ${i + 1}` : ` ${entry.name}`);
-    img.loading = i === 0 ? 'eager' : 'lazy';
-    img.decoding = 'async';
-    img.onerror = () => img.remove();
-    gallery.append(img);
-    photos.push(img);
-  });
-  section.append(gallery);
-
-  // Details and buttons stay outside the animated photo gallery.
-  const details = element('div', 'stationary-details');
-  const unitTitle = element('h3');
-  const description = element('p');
-  const rates = element('div', 'rates');
-  const hourlyCell = element('div');
-  hourlyCell.append(element('small', '', 'Hourly Rate'));
-  const hourlyValue = element('b');
-  hourlyCell.append(hourlyValue);
-  const monthlyCell = element('div');
-  monthlyCell.append(element('small', '', 'Monthly Rate'));
-  const monthlyValue = element('b');
-  monthlyCell.append(monthlyValue);
-  rates.append(hourlyCell, monthlyCell);
-
-  const actions = element('div', 'unit-actions');
-  const view = element('button', '', 'View Details');
-  view.type = 'button';
-  const book = element('button', 'primary', 'Book Now');
-  book.type = 'button';
-  actions.append(view, book);
-  details.append(unitTitle, description, rates, actions);
-  section.append(details);
-
-  const dots = element('div', 'gallery-dots');
-  dots.setAttribute('aria-label', 'Photo navigation');
-  const dotButtons = [];
-  entries.forEach((entry, i) => {
-    const dot = element('button', 'gallery-dot');
-    dot.type = 'button';
-    dot.setAttribute('aria-label', homestay ? `Show photo ${i + 1}` : `Show ${entry.name}`);
-    dot.onclick = () => go(i);
-    dots.append(dot);
-    dotButtons.push(dot);
-  });
-  section.append(dots);
-  document.getElementById('list').append(section);
-
-  let current = 0;
-  function go(index) {
-    current = (index + entries.length) % entries.length;
-    photos.forEach((photo, i) => photo.classList.toggle('active', i === current));
-    dotButtons.forEach((dot, i) => {
-      dot.classList.toggle('active', i === current);
-      dot.setAttribute('aria-current', i === current ? 'true' : 'false');
-    });
-    const entry = entries[current];
-    unitTitle.textContent = entry.name;
-    description.textContent = entry.description;
-    hourlyValue.textContent = entry.hourly;
-    monthlyValue.textContent = entry.monthly;
-    view.onclick = () => showDetails(property, entry);
-    book.onclick = () => showBooking(property, entry);
+  if (property.description) {
+    const summary = element('p','property-summary',property.description);
+    section.append(summary);
+  }
+  if (!property.units.length) {
+    section.append(element('p','empty-units','No published units yet.'));
+    return section;
   }
 
-  let startX = null;
-  gallery.addEventListener('touchstart', e => {
-    startX = e.changedTouches[0].clientX;
-  }, {passive:true});
-  gallery.addEventListener('touchend', e => {
-    if (startX === null) return;
-    const delta = e.changedTouches[0].clientX - startX;
-    if (Math.abs(delta) > 45) go(current + (delta < 0 ? 1 : -1));
-    startX = null;
-  }, {passive:true});
+  // Owner-edited unit data comes only from the public API.
+  // The existing GitHub images remain static until photo management is added.
+  const units = property.units;
+  let unitIndex = 0;
+  if (units.length > 1) {
+    const selectLabel = element('label','unit-select-label','Choose a unit');
+    const select = document.createElement('select');
+    select.className = 'unit-select';
+    units.forEach((u,i) => {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = u.name;
+      select.append(option);
+    });
+    select.addEventListener('change', () => { unitIndex = Number(select.value); updateUnit(); });
+    selectLabel.append(select);
+    section.append(selectLabel);
+  }
 
-  let mouseX = null;
-  gallery.addEventListener('mousedown', e => { mouseX = e.clientX; });
-  gallery.addEventListener('mouseup', e => {
-    if (mouseX === null) return;
-    const delta = e.clientX - mouseX;
-    if (Math.abs(delta) > 45) go(current + (delta < 0 ? 1 : -1));
-    mouseX = null;
+  const gallery = element('div','gallery');
+  gallery.setAttribute('aria-label',property.name + ' photo gallery');
+  const placeholder = element('div','gallery-placeholder');
+  placeholder.innerHTML = icon;
+  gallery.append(placeholder);
+  const dots = element('div','gallery-dots');
+  const details = element('div','stationary-details');
+  const unitTitle = element('h3');
+  const description = element('p');
+  const rates = element('div','rates');
+  const hourlyCell = element('div');
+  hourlyCell.append(element('small','','Hourly Rate'));
+  const hourlyValue = element('b'); hourlyCell.append(hourlyValue);
+  const monthlyCell = element('div');
+  monthlyCell.append(element('small','','Monthly Rate'));
+  const monthlyValue = element('b'); monthlyCell.append(monthlyValue);
+  rates.append(hourlyCell,monthlyCell);
+  const availability = element('p','availability');
+  const actions = element('div','unit-actions');
+  const view = element('button','','View Details'); view.type='button';
+  const book = element('button','primary','Book Now'); book.type='button';
+  actions.append(view,book);
+  details.append(unitTitle,description,availability,rates,actions);
+  section.append(gallery,details,dots);
+
+  let photoIndex=0, photos=[], dotButtons=[];
+  function photoPaths() {
+    if (!local) return [];
+    if (local.slug === 'regal-homestay') return local.photos || [];
+    return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
+  }
+  function go(index) {
+    if (!photos.length) return;
+    photoIndex=(index+photos.length)%photos.length;
+    photos.forEach((p,i)=>p.classList.toggle('active',i===photoIndex));
+    dotButtons.forEach((d,i)=>{
+      d.classList.toggle('active',i===photoIndex);
+      d.setAttribute('aria-current',i===photoIndex?'true':'false');
+    });
+  }
+  function rebuildPhotos() {
+    photos.forEach(p=>p.remove());
+    photos=[]; dotButtons=[]; dots.replaceChildren();
+    photoPaths().forEach((path,i)=>{
+      const img=document.createElement('img');
+      img.className='gallery-image'; img.src=path;
+      img.alt=property.name+' photo '+(i+1);
+      img.loading=i===0?'eager':'lazy'; img.decoding='async';
+      img.onerror=()=>img.remove();
+      gallery.append(img); photos.push(img);
+      if (photoPaths().length>1) {
+        const dot=element('button','gallery-dot');
+        dot.type='button'; dot.setAttribute('aria-label','Show photo '+(i+1));
+        dot.onclick=()=>go(i);
+        dots.append(dot);dotButtons.push(dot);
+      }
+    });
+    photoIndex=0;go(0);
+  }
+  function updateUnit() {
+    const unit=units[unitIndex];
+    unitTitle.textContent=unit.name;
+    description.textContent=unit.description || 'Details to be updated.';
+    hourlyValue.textContent=money(unit.hourlyRate);
+    monthlyValue.textContent=money(unit.monthlyRate);
+    availability.textContent='Unit status: '+(unit.status || 'To be updated');
+    const displayUnit={name:unit.name,description:unit.description || '',
+      hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate)};
+    view.onclick=()=>showDetails(property,displayUnit);
+    book.onclick=()=>showBooking(property,displayUnit);
+    rebuildPhotos();
+  }
+  let startX=null;
+  gallery.addEventListener('touchstart',e=>{startX=e.changedTouches[0].clientX},{passive:true});
+  gallery.addEventListener('touchend',e=>{
+    if(startX===null)return;
+    const dx=e.changedTouches[0].clientX-startX;
+    if(Math.abs(dx)>45)go(photoIndex+(dx<0?1:-1));
+    startX=null;
+  },{passive:true});
+  let mouseX=null;
+  gallery.addEventListener('mousedown',e=>{mouseX=e.clientX});
+  gallery.addEventListener('mouseup',e=>{
+    if(mouseX===null)return;
+    const dx=e.clientX-mouseX;
+    if(Math.abs(dx)>45)go(photoIndex+(dx<0?1:-1));
+    mouseX=null;
   });
-  gallery.addEventListener('dragstart', e => e.preventDefault());
+  gallery.addEventListener('dragstart',e=>e.preventDefault());
+  updateUnit();
+  return section;
+}
 
-  go(0);
-});
+async function loadListings() {
+  if (!PUBLIC_API_URL.startsWith('https://script.google.com/macros/s/')) {
+    statusLine.textContent='Setup required: add your deployed Apps Script URL to PUBLIC_API_URL.';
+    return;
+  }
+  try {
+    const url=PUBLIC_API_URL+'?action=publicListings';
+    const response=await fetch(url,{redirect:'follow'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const data=await response.json();
+    if(!data.success || !Array.isArray(data.properties))throw new Error('Invalid API response');
+    list.replaceChildren();
+    const ordered=[...data.properties].sort((a,b)=>{
+      const order=p=>norm(p.name)===norm('The Regal Homestay')?-1:0;
+      return order(a)-order(b);
+    });
+    if(!ordered.length) {
+      list.append(element('p','load-status','No properties are published yet.'));
+      return;
+    }
+    ordered.forEach(p=>list.append(makePropertyCard(p)));
+  } catch(error) {
+    console.error('Regal Living public listings error:',error);
+    statusLine.textContent='Unable to load property listings right now. Please try again later.';
+  }
+}
+loadListings();
 </script>
 </body></html>
