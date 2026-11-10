@@ -35,6 +35,24 @@
  .unit-select{display:block;width:100%;margin-top:8px;border:1px solid #cbd3dd;border-radius:8px;padding:11px;background:white;color:var(--navy);font:inherit}
  .availability{font-size:12px!important;color:var(--muted)}
 .unit-actions button:disabled{opacity:.48;cursor:not-allowed}
+
+/* Compact card: full descriptions appear only in View Details */
+.stationary-details{padding:18px 20px 16px}
+.stationary-details .availability{margin:0 0 14px;font-size:12px;line-height:1.5}
+.stationary-details .rates{padding-top:14px}
+.dialog .detail-section-title{font-size:15px;margin:20px 0 9px;color:var(--navy)}
+.dialog .detail-copy{white-space:pre-line;overflow-wrap:anywhere;margin:0 0 12px}
+.dialog .detail-facts{border-top:1px solid #edf0f2;border-bottom:1px solid #edf0f2;padding:7px 0;margin:14px 0}
+.dialog .detail-facts p{margin:9px 0}
+.map-panel{border:1px solid #dce3e9;border-radius:12px;overflow:hidden;background:#edf0f4;margin:12px 0 10px}
+.property-map{display:block;width:100%;height:160px;border:0;transition:height .3s ease}
+.map-panel.expanded .property-map{height:340px}
+.map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;background:#fff}
+.map-hint{font-size:12px;color:var(--muted)}
+.map-expand{border:1px solid var(--gold);background:white;color:var(--navy);border-radius:7px;padding:8px 11px;font-weight:700;font-size:12px;cursor:pointer}
+.map-open{display:block;text-align:center;text-decoration:none;background:var(--gold);color:var(--navy);padding:12px;border-radius:8px;font-weight:700;font-size:13px}
+.dialog .map-disclaimer{font-size:11px;margin:10px 0 0}
+@media(prefers-reduced-motion:reduce){.property-map{transition:none}}
 </style>
 </head>
 <body>
@@ -76,15 +94,58 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog()});
 function showDialog(title){dialogTitle.textContent=title;backdrop.classList.add('open');document.getElementById('dialogClose').focus()}
 function addLine(parent,label,value){const p=element('p');const strong=element('strong','',label+': ');p.append(strong,document.createTextNode(value));parent.append(p)}
 function showDetails(property,unit){
- dialogBody.replaceChildren();showDialog(unit.name+' · Details');
- addLine(dialogBody,'Property',property.name);
- 
- addLine(dialogBody,'Description',unit.description);
- addLine(dialogBody,'Hourly rate',unit.hourly);
- addLine(dialogBody,'Monthly rate',unit.monthly);
- addLine(dialogBody,'Property address',property.location || 'To be updated');
- addLine(dialogBody,'Owner contact','Not yet published');
- addLine(dialogBody,'Amenities','To be updated');
+ dialogBody.replaceChildren();
+ showDialog(property.name+' · Details');
+ const about=element('h3','detail-section-title','About this property');
+ dialogBody.append(about);
+ if(property.description && String(property.description).trim()) {
+   dialogBody.append(element('p','detail-copy',property.description));
+ }
+ if(unit.description && String(unit.description).trim() &&
+    String(unit.description).trim()!==String(property.description||'').trim()) {
+   dialogBody.append(element('h3','detail-section-title','Unit details'));
+   dialogBody.append(element('p','detail-copy',unit.description));
+ }
+ if(!property.description && !unit.description) dialogBody.append(element('p','detail-copy','Description to be updated.'));
+ const info=element('div','detail-facts');
+ addLine(info,'Unit',unit.name);
+ addLine(info,'Availability',unit.status || 'To be updated');
+ addLine(info,'Hourly rate',unit.hourly);
+ addLine(info,'Monthly rate',unit.monthly);
+ dialogBody.append(info);
+ const location=String(property.location||'').trim();
+ dialogBody.append(element('h3','detail-section-title','Property Location'));
+ dialogBody.append(element('p','detail-copy',location||'Location to be updated'));
+ // Embed a search preview based on the saved address; this is not a verified pin.
+ if(location && !/^(location to be updated|to be updated|n\/?a|none)$/i.test(location)) {
+   const query=encodeURIComponent(location);
+   const mapPanel=element('div','map-panel');
+   const frame=document.createElement('iframe');
+   frame.className='property-map';
+   frame.title='Map search for '+property.name;
+   frame.loading='lazy';
+   frame.referrerPolicy='no-referrer-when-downgrade';
+   frame.setAttribute('allowfullscreen','');
+   frame.src='https://maps.google.com/maps?q='+query+'&output=embed';
+   const toolbar=element('div','map-toolbar');
+   const expand=element('button','map-expand','Expand Map');
+   expand.type='button';expand.setAttribute('aria-expanded','false');
+   expand.onclick=()=>{
+     const expanded=mapPanel.classList.toggle('expanded');
+     expand.textContent=expanded?'Minimize Map':'Expand Map';
+     expand.setAttribute('aria-expanded',String(expanded));
+   };
+   toolbar.append(element('span','map-hint','Map preview'),expand);
+   mapPanel.append(frame,toolbar);
+   dialogBody.append(mapPanel);
+   const open=document.createElement('a');
+   open.className='map-open';
+   open.href='https://www.google.com/maps/search/?api=1&query='+query;
+   open.target='_blank';open.rel='noopener noreferrer';
+   open.textContent='Open in Google Maps ↗';
+   dialogBody.append(open);
+   dialogBody.append(element('p','map-disclaimer','Map is based on the saved address. Confirm the exact location with the property owner.'));
+ }
 }
 function showBooking(property,unit){
  dialogBody.replaceChildren();showDialog('Booking inquiry · '+unit.name);
@@ -129,10 +190,6 @@ function makePropertyCard(property) {
   head.append(heading,logo);
   section.append(head);
 
-  if (property.description) {
-    const summary = element('p','property-summary',property.description);
-    section.append(summary);
-  }
   const hasPublishedUnits=Array.isArray(property.units) && property.units.length>0;
   const isHomestay=local && local.slug==='regal-homestay';
   if (!hasPublishedUnits && !isHomestay) {
@@ -166,8 +223,6 @@ function makePropertyCard(property) {
   gallery.append(placeholder);
   const dots = element('div','gallery-dots');
   const details = element('div','stationary-details');
-  const unitTitle = element('h3');
-  const description = element('p');
   const rates = element('div','rates');
   const hourlyCell = element('div');
   hourlyCell.append(element('small','','Hourly Rate'));
@@ -182,7 +237,7 @@ function makePropertyCard(property) {
   const book = element('button','primary','Book Now'); book.type='button';
   actions.append(view,book);
   // Keep inquiry and details buttons visible even before unit publication.
-  details.append(unitTitle,description,availability,rates,actions);
+  details.append(availability,rates,actions);
   section.append(gallery,details,dots);
 
    let photoIndex=0, photos=[], dotButtons=[];
@@ -237,13 +292,11 @@ function makePropertyCard(property) {
    }
   function updateUnit() {
     const unit=units[unitIndex];
-    unitTitle.textContent=unit.name;
-    description.textContent=unit.description || 'Details to be updated.';
     hourlyValue.textContent=money(unit.hourlyRate);
     monthlyValue.textContent=money(unit.monthlyRate);
     availability.textContent=hasPublishedUnits ? 'Unit status: '+(unit.status || 'To be updated') : 'Unit details and rates not yet published · Inquiry only';
     const displayUnit={name:unit.name,description:unit.description || '',
-      hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate)};
+      hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate),status:unit.status || (hasPublishedUnits?'To be updated':'Not yet published')};
     view.onclick=()=>showDetails(property,displayUnit);
     book.onclick=()=>showBooking(property,displayUnit);
     rebuildPhotos();
