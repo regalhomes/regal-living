@@ -75,7 +75,7 @@ properties.forEach((property)=>{
  logo.setAttribute('aria-label','Logo placeholder for '+property.name);
  logo.innerHTML=icon;
  const logoImg=document.createElement('img');
- logoImg.src='images/'+property.slug+'-logo.png';
+ logoImg.src = property.logo || `images/${property.slug}-Logo.jpg`;
  logoImg.alt=property.name+' logo';
  logoImg.loading='lazy';
  logoImg.onerror=()=>logoImg.remove();
