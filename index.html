@@ -38,7 +38,12 @@
 
 /* Compact card: full descriptions appear only in View Details */
 .stationary-details{padding:18px 20px 16px}
-.stationary-details .availability{margin:0 0 14px;font-size:12px;line-height:1.5}
+.stationary-details .availability{display:inline-flex;align-items:center;max-width:100%;margin:0 0 14px;padding:6px 11px;border-radius:999px;font-size:12px;line-height:1.4;font-weight:700;background:#f1f3f5;color:#64748b}
+.availability.status-available{background:#e8f7ed;color:#187443}
+.availability.status-pending{background:#fff2dc;color:#a75c09}
+.availability.status-occupied{background:#fce8e8;color:#b42332}
+.availability.status-unavailable{background:#eef0f3;color:#59677a}
+.availability.status-unpublished{background:#f2f4f7;color:#667487;font-weight:500}
 .stationary-details .rates{padding-top:14px}
 .dialog .detail-section-title{font-size:15px;margin:20px 0 9px;color:var(--navy)}
 .dialog .detail-copy{white-space:pre-line;overflow-wrap:anywhere;margin:0 0 12px}
@@ -294,7 +299,19 @@ function makePropertyCard(property) {
     const unit=units[unitIndex];
     hourlyValue.textContent=money(unit.hourlyRate);
     monthlyValue.textContent=money(unit.monthlyRate);
-    availability.textContent=hasPublishedUnits ? 'Unit status: '+(unit.status || 'To be updated') : 'Unit details and rates not yet published · Inquiry only';
+    const rawStatus=String(unit.status || '').trim();
+    const normalizedStatus=rawStatus.toLowerCase();
+    availability.className='availability';
+    if (!hasPublishedUnits) {
+      availability.textContent='Unit details and rates not yet published · Inquiry only';
+      availability.classList.add('status-unpublished');
+    } else {
+      availability.textContent=rawStatus || 'To be updated';
+      if (['available','vacant','open'].includes(normalizedStatus)) availability.classList.add('status-available');
+      else if (['pending','reserved','reservation pending'].includes(normalizedStatus)) availability.classList.add('status-pending');
+      else if (['occupied','booked','in use'].includes(normalizedStatus)) availability.classList.add('status-occupied');
+      else availability.classList.add('status-unavailable');
+    }
     const displayUnit={name:unit.name,description:unit.description || '',
       hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate),status:unit.status || (hasPublishedUnits?'To be updated':'Not yet published')};
     view.onclick=()=>showDetails(property,displayUnit);
