@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Regal Living | Properties</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#101c32;--gold:#c6a45b;--cream:#f7f6f2;--muted:#667487}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);font-family:Arial,sans-serif;color:var(--navy)}header{background:linear-gradient(135deg,#101c32,#263d5b);color:white;padding:22px 20px 52px}nav{display:flex;justify-content:space-between;align-items:center;gap:12px}nav strong{letter-spacing:2px;font-size:18px}nav strong span,.eyebrow{color:var(--gold)}nav a{color:white;text-decoration:none;font-size:12px}.hero{padding:66px 4px 12px}.eyebrow{letter-spacing:3px;text-transform:uppercase;font-size:11px;font-weight:700}.hero h1{font-size:clamp(35px,9vw,58px);line-height:1.08;margin:16px 0}.hero p{line-height:1.7;color:#dce3ee;max-width:460px}main{max-width:540px;margin:auto;padding:24px 15px 55px}.intro{text-align:center;padding:20px 8px 28px}.intro h2{margin:10px 0}.intro p{color:var(--muted);line-height:1.6;font-size:14px}.property{background:white;border:1px solid #e6e9ed;border-radius:18px;overflow:hidden;margin-bottom:24px;box-shadow:0 9px 26px #101c3210}.property-head{padding:22px 19px 16px}.property-head h2{font-size:23px;margin:8px 0}.owner{font-size:13px;color:var(--muted);margin:0}.carousel{overflow:hidden;touch-action:pan-y;position:relative}.track{display:flex;transition:transform .48s cubic-bezier(.22,.8,.25,1);will-change:transform}.slide{min-width:100%;opacity:.45;transition:opacity .45s ease}.slide.active{opacity:1}.photo{height:255px;background:linear-gradient(135deg,#e7edf2,#cbd6e1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#63758a;position:relative}.photo svg{width:42px;height:42px;opacity:.65}.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.photo-label{position:absolute;bottom:12px;left:13px;background:#101c32c9;color:white;font-size:11px;padding:7px 10px;border-radius:20px}.details{padding:19px 20px 14px;min-height:178px}.details h3{font-size:20px;margin:0 0 9px}.details p{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 14px}.rates{display:flex;gap:16px;border-top:1px solid #edf0f2;padding-top:13px}.rates div{flex:1}.rates small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.rates b{font-size:13px}.unit-actions{display:flex;gap:9px;margin-top:16px}.unit-actions button{flex:1;border:1px solid var(--gold);border-radius:7px;padding:12px 8px;font-weight:700;cursor:pointer;font-size:12px;background:white;color:var(--navy)}.unit-actions button.primary{background:var(--gold)}.unit-actions button:focus-visible,.btn:focus-visible{outline:3px solid #567bb0;outline-offset:3px}.dialog-backdrop{position:fixed;inset:0;background:#071426bb;z-index:20;display:none;align-items:center;justify-content:center;padding:18px}.dialog-backdrop.open{display:flex}.dialog{width:min(100%,460px);max-height:90vh;overflow:auto;background:white;border-radius:16px;padding:25px;box-shadow:0 18px 70px #0004}.dialog h2{margin:0 0 14px}.dialog p{color:var(--muted);font-size:14px;line-height:1.65}.dialog .close{float:right;border:0;background:#edf0f4;border-radius:50%;width:32px;height:32px;cursor:pointer}.dialog label{display:block;font-size:13px;font-weight:700;margin-top:13px}.dialog input,.dialog textarea{display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #cbd3dd;border-radius:7px;font:inherit}.dialog textarea{min-height:85px;resize:vertical}.dialog .submit{border:0;border-radius:7px;background:var(--gold);padding:12px 16px;font-weight:700;margin-top:16px;cursor:pointer;width:100%}.controls{display:flex;align-items:center;justify-content:space-between;padding:0 19px 19px}.dots{display:flex;gap:7px}.dot{width:8px;height:8px;border:0;border-radius:20px;background:#cbd3dd;padding:0;cursor:pointer;transition:width .25s}.dot.active{background:var(--gold);width:22px}.arrows{display:flex;align-items:center;gap:9px}.count{font-size:12px;color:var(--muted)}.arrow{border:1px solid #d8dfe6;background:white;border-radius:50%;width:35px;height:35px;font-size:20px;cursor:pointer;color:var(--navy)}.arrow:disabled{opacity:.3;cursor:default}.contact{text-align:center;background:var(--navy);color:white;padding:45px 20px}.contact p{font-size:14px;line-height:1.7;color:#d9e2ec}.btn{display:inline-block;background:var(--gold);color:var(--navy);padding:13px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:12px;margin-top:12px}footer{text-align:center;background:#0b1425;color:#adb9c8;padding:20px;font-size:12px}@media(min-width:720px){main{max-width:820px}.property{max-width:560px;margin:0 auto 28px}.hero{max-width:820px;margin:auto}.photo{height:300px}}@media(prefers-reduced-motion:reduce){.track,.slide,.dot{transition:none}}
 
@@ -58,6 +61,43 @@
 .map-open{display:block;text-align:center;text-decoration:none;background:var(--gold);color:var(--navy);padding:12px;border-radius:8px;font-weight:700;font-size:13px}
 .dialog .map-disclaimer{font-size:11px;margin:10px 0 0}
 @media(prefers-reduced-motion:reduce){.property-map{transition:none}}
+
+/* Boutique booking modal, isolated from property cards and detail/map dialog */
+.dialog-backdrop{background:rgba(10,22,40,.52);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.dialog-backdrop.open .dialog{animation:bookingAppear .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bookingAppear{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.dialog.booking-dialog{padding:0;max-width:490px;border-radius:19px;background:#faf9f6;overflow:auto;font-family:'DM Sans',Arial,sans-serif;box-shadow:0 24px 80px rgba(6,17,34,.32)}
+.booking-dialog .close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.13);color:white;border:1px solid rgba(255,255,255,.2);font-size:22px;float:none}
+.dialog.booking-dialog{position:relative}
+.booking-dialog #dialogTitle{background:#14243d;color:#fff;margin:0;padding:43px 25px 7px;font:600 34px/1.05 'Cormorant Garamond',Georgia,serif;letter-spacing:.2px}
+.booking-dialog #dialogTitle::before{content:'REGAL LIVING  ·  RESERVATIONS';position:absolute;top:20px;left:25px;color:#d4b87e;font:700 9px/1 'DM Sans',Arial,sans-serif;letter-spacing:2px}
+.booking-dialog #dialogBody{padding:0 24px 24px}
+.booking-subtitle{background:#14243d;color:#dce3eb!important;margin:0 -24px 20px!important;padding:0 24px 22px;font-size:12px!important}
+.booking-dialog .booking-field{margin-bottom:14px}
+.booking-dialog .booking-field label{font-size:11px;color:#344154;font-weight:700;letter-spacing:.3px;margin:0 0 6px}
+.booking-dialog .booking-field input,.booking-dialog .booking-field select,.booking-dialog .booking-field textarea{background:#fff;border:1px solid #e1e4e8;border-radius:9px;padding:13px 12px;font:13px 'DM Sans',Arial,sans-serif;color:#263347;width:100%;margin:0;min-height:45px}
+.booking-dialog .booking-field textarea{min-height:70px}
+.booking-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.booking-summary{background:#f0f1ef;border-radius:11px;padding:15px;margin:8px 0 17px}
+.booking-summary h3{font-size:13px;margin:0 0 11px;color:#243047}
+.booking-summary-row{display:flex;justify-content:space-between;gap:12px;font-size:11px;padding:6px 0}
+.booking-summary-row span:first-child{color:#687487}.booking-summary-row span:last-child{color:#243047;text-align:right;font-weight:600}
+.booking-summary-row.total{border-top:1px solid #d9dfe1;margin-top:8px;padding-top:12px}
+.booking-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.booking-actions button{width:100%;min-height:45px;border-radius:9px;font:700 12px 'DM Sans',Arial,sans-serif;cursor:pointer}
+.booking-cancel{background:white;color:#273246;border:1px solid #d6dce2}
+.booking-confirm{background:#c6a45b;color:#14243d;border:1px solid #c6a45b}
+.booking-confirm:disabled{opacity:.55;cursor:wait}
+.booking-note{text-align:center;color:#778392!important;font-size:10px!important;margin:12px 0 0!important}
+.booking-feedback{font-size:12px!important;line-height:1.55!important;margin:12px 0!important}
+.booking-feedback.error{color:#a52e32!important}
+.booking-wait{text-align:center;padding:25px 0 10px}
+.booking-wait .booking-clock{font-size:38px;color:#b99243}
+.booking-wait h3{font:600 30px 'Cormorant Garamond',Georgia,serif;margin:10px 0;color:#14243d}
+.booking-wait p{font-size:13px;color:#657287;line-height:1.6}
+.booking-reference{font-size:12px;background:#f0f1ef;padding:13px;border-radius:9px;overflow-wrap:anywhere}
+@media(max-width:390px){.booking-dialog #dialogTitle{font-size:29px}.booking-dialog #dialogBody{padding-left:17px;padding-right:17px}.booking-subtitle{margin-left:-17px!important;margin-right:-17px!important;padding-left:17px;padding-right:17px}}
+@media(prefers-reduced-motion:reduce){.dialog-backdrop.open .dialog{animation:none}}
 </style>
 </head>
 <body>
@@ -92,7 +132,7 @@ const PUBLIC_API_URL = 'https://script.google.com/macros/s/AKfycbygIMXSFD68RCnGO
 const backdrop=document.getElementById('dialogBackdrop');
 const dialogTitle=document.getElementById('dialogTitle');
 const dialogBody=document.getElementById('dialogBody');
-const closeDialog=()=>{backdrop.classList.remove('open');dialogBody.replaceChildren();};
+const closeDialog=()=>{backdrop.classList.remove('open');dialogBody.replaceChildren();backdrop.querySelector('.dialog').classList.remove('booking-dialog');};
 document.getElementById('dialogClose').onclick=closeDialog;
 backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeDialog()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog()});
@@ -152,19 +192,91 @@ function showDetails(property,unit){
    dialogBody.append(element('p','map-disclaimer','Map is based on the saved address. Confirm the exact location with the property owner.'));
  }
 }
+// The public booking endpoint must be separately implemented server-side.
+// Leave blank until Apps Script validates bookings, saves Pending records and checks conflicts.
+const BOOKING_REQUEST_URL = '';
 function showBooking(property,unit){
- dialogBody.replaceChildren();showDialog('Booking inquiry · '+unit.name);
- const info=element('p','','This is an inquiry draft only. No booking is submitted or confirmed yet.');
- const form=element('form');
- function field(label,type,required=true){const wrap=element('label','',label);const input=document.createElement('input');input.type=type;input.required=required;wrap.append(input);form.append(wrap);return input}
- const guest=field('Guest name','text');const date=field('Preferred check-in date','date');date.min=new Date().toLocaleDateString('en-CA');
- const notesLabel=element('label','','Preferred time / duration and other details');const notes=document.createElement('textarea');notes.required=true;notesLabel.append(notes);form.append(notesLabel);
- const submit=element('button','submit','Copy inquiry details');submit.type='submit';form.append(submit);
- const status=element('p');status.setAttribute('role','status');
- form.onsubmit=async e=>{e.preventDefault();const message=`Regal Living booking inquiry\nProperty: ${property.name}\nUnit: ${unit.name}\nGuest: ${guest.value}\nPreferred date: ${date.value}\nTime / duration: ${notes.value}\nStatus: Inquiry only — not confirmed`;
- try{await navigator.clipboard.writeText(message);status.textContent='Inquiry copied. Send it through an official booking channel once available.'}catch{status.textContent='Copy unavailable in this browser. Please save your inquiry details manually.'}};
- dialogBody.append(info,form,status);
+  dialogBody.replaceChildren();
+  backdrop.querySelector('.dialog').classList.add('booking-dialog');
+  showDialog('Reserve Your Stay');
+  dialogBody.append(element('p','booking-subtitle',property.name+(unit.name!==property.name?' · '+unit.name:'')));
+  const form=element('form');
+  function field(label,type,required=true){
+    const box=element('div','booking-field');
+    const text=element('label','',label);const input=document.createElement('input');
+    input.type=type;input.required=required;input.autocomplete=type==='text'?'name':'off';
+    text.append(input);box.append(text);return {box,input};
+  }
+  const name=field('Full Name','text');name.input.maxLength=100;
+  const email=field('Email Address','email');email.input.autocomplete='email';
+  const date=field('Check-in Date','date');
+  const localToday=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  date.input.min=localToday();
+  const time=field('Check-in Time','time');time.input.value='13:00';
+  const durationBox=element('div','booking-field');
+  const durationLabel=element('label','','Duration');
+  const duration=document.createElement('select');
+  [1,2,3,4,5,6,8,12,24].forEach(h=>{const opt=element('option','',h+' '+(h===1?'Hour':'Hours'));opt.value=String(h);duration.append(opt)});
+  duration.value='3';durationLabel.append(duration);durationBox.append(durationLabel);
+  const notes=field('Additional Notes (optional)','text',false);notes.input.maxLength=300;
+  form.append(name.box,email.box,date.box);
+  const times=element('div','booking-grid');times.append(time.box,durationBox);form.append(times,notes.box);
+  const summary=element('div','booking-summary');
+  summary.append(element('h3','','Booking Summary'));
+  function summaryRow(label,value,extra=''){
+    const row=element('div','booking-summary-row '+extra);row.append(element('span','',label),element('span','',value));summary.append(row);return row.lastChild;
+  }
+  summaryRow('Property',property.name);
+  const dateValue=summaryRow('Check-in','Select a date');
+  const durationValue=summaryRow('Duration','3 hours');
+  summaryRow('Approval','Required');
+  const totalValue=summaryRow('Estimated total','—','total');
+  const rateNumber=Number(String(unit.hourly||'').replace(/[^0-9.]/g,''));
+  const rateKnown=/^₱/.test(String(unit.hourly||''))&&Number.isFinite(rateNumber)&&rateNumber>0;
+  function refresh(){
+    dateValue.textContent=date.input.value?date.input.value+' · '+time.input.value:'Select a date';
+    durationValue.textContent=duration.value+' hours';
+    totalValue.textContent=rateKnown?'₱'+(rateNumber*Number(duration.value)).toLocaleString('en-PH')+' (estimate)':'Confirm rate with owner';
+  }
+  [date.input,time.input,duration].forEach(el=>el.addEventListener('change',refresh));refresh();
+  form.append(summary);
+  const actions=element('div','booking-actions');
+  const cancel=element('button','booking-cancel','Cancel');cancel.type='button';cancel.onclick=closeDialog;
+  const confirm=element('button','booking-confirm','Confirm');confirm.type='submit';
+  actions.append(cancel,confirm);form.append(actions);
+  form.append(element('p','booking-note','All booking requests require owner approval.'));
+  const feedback=element('p','booking-feedback');feedback.setAttribute('role','status');
+  form.append(feedback);dialogBody.append(form);
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    const checkIn=new Date(`${date.input.value}T${time.input.value}:00`);
+    if(!Number.isFinite(checkIn.getTime())||checkIn<=new Date()){
+      feedback.className='booking-feedback error';feedback.textContent='Choose a future check-in date and time.';return;
+    }
+    if(!BOOKING_REQUEST_URL){
+      feedback.className='booking-feedback error';
+      feedback.textContent='Online booking requests are not enabled yet. The owner approval backend must be connected first. No request has been sent.';
+      return;
+    }
+    // The endpoint must enforce owner authorization, conflict checks, rate validation and anti-spam.
+    const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guestEmail:email.input.value.trim(),checkIn:checkIn.toISOString(),durationHours:Number(duration.value),notes:notes.input.value.trim()};
+    confirm.disabled=true;confirm.textContent='Submitting…';feedback.textContent='Sending your request…';
+    try{
+      const response=await fetch(BOOKING_REQUEST_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
+      if(!response.ok)throw new Error('Request failed');
+      const result=await response.json();
+      if(result.success!==true||!result.bookingId||!['pending','pending approval','waiting for approval'].includes(String(result.status||'').toLowerCase()))throw new Error('Booking was not confirmed by the server');
+      dialogBody.replaceChildren();
+      dialogBody.append(element('p','booking-subtitle',property.name));
+      const waiting=element('div','booking-wait');
+      waiting.append(element('div','booking-clock','◷'),element('h3','','Waiting for Approval'),element('p','','Your booking request has been received. The property owner will review it. This is not a confirmed reservation.'));
+      waiting.append(element('div','booking-reference','Booking reference: '+String(result.bookingId)));
+      const done=element('div','booking-actions');const close=element('button','booking-confirm','Close');close.type='button';close.onclick=closeDialog;done.append(close);waiting.append(done);dialogBody.append(waiting);
+    }catch(err){feedback.className='booking-feedback error';feedback.textContent='Unable to submit the booking. Please try again later. No approval has been confirmed.';}
+    finally{confirm.disabled=false;confirm.textContent='Confirm';}
+  };
 }
+
 const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 18 6-6 4 4 3-3 5 5"/></svg>';
 function element(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el}
 const list = document.getElementById('list');
@@ -312,7 +424,7 @@ function makePropertyCard(property) {
       else if (['occupied','booked','in use'].includes(normalizedStatus)) availability.classList.add('status-occupied');
       else availability.classList.add('status-unavailable');
     }
-    const displayUnit={name:unit.name,description:unit.description || '',
+    const displayUnit={...unit,name:unit.name,description:unit.description || '',
       hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate),status:unit.status || (hasPublishedUnits?'To be updated':'Not yet published')};
     view.onclick=()=>showDetails(property,displayUnit);
     book.onclick=()=>showBooking(property,displayUnit);
