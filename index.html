@@ -140,7 +140,7 @@ function makePropertyCard(property) {
     return section;
   }
 
-  // Owner-edited unit data comes only from the public API.
+  // Verified unit data comes only from the public API.
   // The existing GitHub images remain static until photo management is added.
   const units = hasPublishedUnits ? property.units : [{name:'The Regal Homestay',description:'Explore our photo gallery. Unit information and rental rates will be published soon.',hourlyRate:null,monthlyRate:null,status:'Not yet published'}];
   let unitIndex = 0;
@@ -181,7 +181,7 @@ function makePropertyCard(property) {
   const view = element('button','','View Details'); view.type='button';
   const book = element('button','primary','Book Now'); book.type='button';
   actions.append(view,book);
-  if(!hasPublishedUnits){view.disabled=true;book.disabled=true;view.title='Unit details are not published yet';book.title='Booking will be available once units are published';}
+  // Keep inquiry and details buttons visible even before unit publication.
   details.append(unitTitle,description,availability,rates,actions);
   section.append(gallery,details,dots);
 
@@ -241,7 +241,7 @@ function makePropertyCard(property) {
     description.textContent=unit.description || 'Details to be updated.';
     hourlyValue.textContent=money(unit.hourlyRate);
     monthlyValue.textContent=money(unit.monthlyRate);
-    availability.textContent=hasPublishedUnits ? 'Unit status: '+(unit.status || 'To be updated') : 'Unit information not yet published';
+    availability.textContent=hasPublishedUnits ? 'Unit status: '+(unit.status || 'To be updated') : 'Unit details and rates not yet published · Inquiry only';
     const displayUnit={name:unit.name,description:unit.description || '',
       hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate)};
     view.onclick=()=>showDetails(property,displayUnit);
@@ -271,32 +271,36 @@ function makePropertyCard(property) {
   return section;
 }
 
+// The Homestay gallery is published from GitHub independently of API unit records.
+// Unit rates and availability are never invented if the API has no data.
+function renderListings(apiProperties=[]) {
+  const published=Array.isArray(apiProperties)?apiProperties:[];
+  const homestay=LOCAL_PROPERTIES.find(p=>p.slug==='regal-homestay');
+  const matching=published.find(p=>norm(p.name)===norm(homestay.name));
+  const homestayListing=matching
+    ? {...matching,name:homestay.name,units:Array.isArray(matching.units)?matching.units:[]}
+    : {name:homestay.name,location:'Location to be updated',units:[]};
+  const others=published.filter(p=>norm(p.name)!==norm(homestay.name));
+  list.replaceChildren();
+  [homestayListing,...others].forEach(p=>list.append(makePropertyCard(p)));
+}
+
 async function loadListings() {
-  if (!PUBLIC_API_URL.startsWith('https://script.google.com/macros/s/')) {
-    statusLine.textContent='Setup required: add your deployed Apps Script URL to PUBLIC_API_URL.';
-    return;
-  }
+  // Render local photos immediately; refresh published unit data when available.
+  renderListings();
+  if (!PUBLIC_API_URL.startsWith('https://script.google.com/macros/s/')) return;
   try {
-    const url=PUBLIC_API_URL+'?action=publicListings';
-    const response=await fetch(url,{redirect:'follow'});
+    const response=await fetch(PUBLIC_API_URL+'?action=publicListings',{redirect:'follow'});
     if(!response.ok)throw new Error('HTTP '+response.status);
     const data=await response.json();
     if(!data.success || !Array.isArray(data.properties))throw new Error('Invalid API response');
-    list.replaceChildren();
-    const ordered=[...data.properties].sort((a,b)=>{
-      const order=p=>norm(p.name)===norm('The Regal Homestay')?-1:0;
-      return order(a)-order(b);
-    });
-    if(!ordered.length) {
-      list.append(element('p','load-status','No properties are published yet.'));
-      return;
-    }
-    ordered.forEach(p=>list.append(makePropertyCard(p)));
+    renderListings(data.properties);
   } catch(error) {
     console.error('Regal Living public listings error:',error);
-    statusLine.textContent='Unable to load property listings right now. Please try again later.';
+    // Keep the locally hosted gallery visible if the API is temporarily unavailable.
   }
 }
+
 loadListings();
 </script>
 </body></html>
