@@ -92,9 +92,36 @@ properties.forEach((property)=>{
  logoImg.onerror=()=>logoImg.remove();
  logo.append(logoImg);
  head.append(heading,logo);section.append(head);
- const carousel=element('div','carousel');const track=element('div','track');const dots=element('div','dots');const count=element('span','count');const prev=element('button','arrow','‹'),next=element('button','arrow','›');prev.setAttribute('aria-label','Previous unit');next.setAttribute('aria-label','Next unit');
- const slides=[];const buttons=[];const units=Array.from({length:property.units},(_,i)=>({name:'Unit '+(i+1),description:'Unit photos, room features, and verified details will be added soon.',image:'images/'+property.slug+'-unit-'+(i+1)+'.jpg',hourly:'To be updated',monthly:'To be updated'}));
- units.forEach((unit,i)=>{const slide=element('article','slide');const photo=element('div','photo');photo.innerHTML=icon;const label=element('span','photo-label','Unit photo placeholder');photo.append(label);if(unit.image){const img=document.createElement('img');img.src=unit.image;img.alt=property.name+' '+unit.name;img.loading='lazy';img.onerror=()=>img.remove();photo.append(img)}const details=element('div','details');details.append(element('h3','',unit.name),element('p','',unit.description));const rates=element('div','rates');[['Hourly Rate',unit.hourly],['Monthly Rate',unit.monthly]].forEach(([name,value])=>{const cell=element('div');cell.append(element('small','',name),element('b','',value));rates.append(cell)});details.append(rates);const actions=element('div','unit-actions');const view=element('button','','View Details');view.type='button';view.onclick=()=>showDetails(property,unit);const book=element('button','primary','Book Now');book.type='button';book.onclick=()=>showBooking(property,unit);actions.append(view,book);details.append(actions);slide.append(photo,details);track.append(slide);slides.push(slide);const dot=element('button','dot');dot.setAttribute('aria-label','Show '+unit.name);dot.onclick=()=>go(i);dots.append(dot);buttons.push(dot)});
+ const carousel=element('div','carousel');const track=element('div','track');const dots=element('div','dots');const count=element('span','count');const prev=element('button','arrow','‹'),next=element('button','arrow','›');prev.setAttribute('aria-label', 'Previous photo or unit');
+next.setAttribute('aria-label', 'Next photo or unit');
+ 
+const slides = [];
+const buttons = [];
+
+const units = property.slug === 'regal-homestay'
+  ? property.photos.map((photo, i) => ({
+      name: 'The Regal Homestay',
+      description: 'Explore photos of The Regal Homestay.',
+      image: photo,
+      hourly: 'To be updated',
+      monthly: 'To be updated',
+      photoNumber: i + 1
+    }))
+  : Array.from({ length: property.units }, (_, i) => ({
+      name: 'Unit ' + (i + 1),
+      description: 'Unit photos, room features, and verified details will be added soon.',
+      image: 'images/' + property.slug + '-unit-' + (i + 1) + '.jpg',
+      hourly: 'To be updated',
+      monthly: 'To be updated'
+    }));
+
+ units.forEach((unit,i)=>{const slide=element('article','slide');const photo=element('div','photo');photo.innerHTML=icon;const label = element(
+  'span',
+  'photo-label',
+  property.slug === 'regal-homestay'
+    ? `Photo ${unit.photoNumber} of ${property.photos.length}`
+    : 'Unit photo placeholder'
+);photo.append(label);if(unit.image){const img=document.createElement('img');img.src=unit.image;img.alt=property.name+' '+unit.name;img.loading='lazy';img.onerror=()=>img.remove();photo.append(img)}const details=element('div','details');details.append(element('h3','',unit.name),element('p','',unit.description));const rates=element('div','rates');[['Hourly Rate',unit.hourly],['Monthly Rate',unit.monthly]].forEach(([name,value])=>{const cell=element('div');cell.append(element('small','',name),element('b','',value));rates.append(cell)});details.append(rates);const actions=element('div','unit-actions');const view=element('button','','View Details');view.type='button';view.onclick=()=>showDetails(property,unit);const book=element('button','primary','Book Now');book.type='button';book.onclick=()=>showBooking(property,unit);actions.append(view,book);details.append(actions);slide.append(photo,details);track.append(slide);slides.push(slide);const dot=element('button','dot');dot.setAttribute('aria-label','Show '+unit.name);dot.onclick=()=>go(i);dots.append(dot);buttons.push(dot)});
  carousel.append(track);section.append(carousel);const controls=element('div','controls');const arrows=element('div','arrows');arrows.append(count,prev,next);controls.append(dots,arrows);section.append(controls);document.getElementById('list').append(section);
  let current=0,startX=null;function go(i){current=Math.max(0,Math.min(units.length-1,i));track.style.transform=`translateX(-${current*100}%)`;slides.forEach((s,j)=>s.classList.toggle('active',j===current));buttons.forEach((b,j)=>{b.classList.toggle('active',j===current);b.setAttribute('aria-current',j===current?'true':'false')});count.textContent=`${current+1} / ${units.length}`;prev.disabled=current===0;next.disabled=current===units.length-1}
  prev.onclick=()=>go(current-1);next.onclick=()=>go(current+1);carousel.addEventListener('touchstart',e=>{startX=e.changedTouches[0].clientX},{passive:true});carousel.addEventListener('touchend',e=>{if(startX===null)return;const delta=e.changedTouches[0].clientX-startX;if(Math.abs(delta)>45)go(current+(delta<0?1:-1));startX=null},{passive:true});let mouseX=null;carousel.addEventListener('mousedown',e=>{mouseX=e.clientX});carousel.addEventListener('mouseup',e=>{if(mouseX===null)return;const delta=e.clientX-mouseX;if(Math.abs(delta)>45)go(current+(delta<0?1:-1));mouseX=null});go(0);
