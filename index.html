@@ -106,7 +106,7 @@
 <section class="contact" id="contact"><div class="eyebrow">Get in touch</div><h2>Interested in a unit?</h2><p>Contact Regal Living for current availability and confirmed rental rates.</p><button class="btn" type="button" disabled style="border:0;opacity:.65;cursor:not-allowed">HELP DESK · COMING SOON</button></section><footer>© 2026 Regal Living · A Place to Call Home</footer>
 <div class="dialog-backdrop" id="dialogBackdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><button class="close" type="button" id="dialogClose" aria-label="Close">×</button><h2 id="dialogTitle"></h2><div id="dialogBody"></div></section></div>
 <script>
-// DEMO UNITS ONLY. Replace with verified unit inventory and rates later.
+// Static gallery metadata only. Live units and prices come from the public API.
 // Upload photos under images/ using the filenames defined below.
 // Missing images display the existing placeholders automatically.
 const LOCAL_PROPERTIES=[
@@ -192,8 +192,8 @@ function showDetails(property,unit){
    dialogBody.append(element('p','map-disclaimer','Map is based on the saved address. Confirm the exact location with the property owner.'));
  }
 }
-// The public booking endpoint must be separately implemented server-side.
-// Leave blank until Apps Script validates bookings, saves Pending records and checks conflicts.
+// Public booking endpoint is handled by the deployed Apps Script backend.
+// Server must validate all fields and save requests as Pending.
 const BOOKING_REQUEST_URL = PUBLIC_API_URL;
 function showBooking(property,unit){
   dialogBody.replaceChildren();
@@ -259,7 +259,7 @@ function showBooking(property,unit){
       return;
     }
     // The endpoint must enforce owner authorization, conflict checks, rate validation and anti-spam.
-    const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guescheckIn:date.input.value+'T'+time.input.value()tEmail:email.input.value.trim(),,durationHours:Number(duration.value),notes:notes.input.value.trim()};
+    const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guestEmail:email.input.value.trim(),checkIn:date.input.value+'T'+time.input.value,durationHours:Number(duration.value),notes:notes.input.value.trim()};
     confirm.disabled=true;confirm.textContent='Submitting…';feedback.textContent='Sending your request…';
     try{
       const response=await fetch(BOOKING_REQUEST_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
