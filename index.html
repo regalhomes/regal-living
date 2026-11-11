@@ -260,20 +260,62 @@ function showBooking(property,unit){
     }
     // The endpoint must enforce owner authorization, conflict checks, rate validation and anti-spam.
     const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guestEmail:email.input.value.trim(),checkIn:date.input.value+'T'+time.input.value,durationHours:Number(duration.value),notes:notes.input.value.trim()};
-    confirm.disabled=true;confirm.textContent='Submitting…';feedback.textContent='Sending your request…';
+    // Catch missing public identifiers before sending a request.
+    if (!payload.propertyId || !payload.unitId) {
+      feedback.className='booking-feedback error';
+      feedback.textContent='Booking unavailable: this property or unit is missing its published ID. Please contact the owner.';
+      console.warn('[Regal Booking] Missing published propertyId or unitId.');
+      return;
+    }
+    confirm.disabled=true;confirm.textContent='Submitting…';feedback.className='booking-feedback';feedback.textContent='Sending your request…';
+    let requestMayHaveReachedServer=false;
+    let serverRejected=false;
     try{
-      const response=await fetch(BOOKING_REQUEST_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
-      if(!response.ok)throw new Error('Request failed');
-      const result=await response.json();
-      if(result.success!==true||!result.bookingId||!['pending','pending approval','waiting for approval'].includes(String(result.status||'').toLowerCase()))throw new Error('Booking was not confirmed by the server');
+      // A network/redirect failure may occur after the backend has saved the booking.
+      requestMayHaveReachedServer=true;
+      const response=await fetch(BOOKING_REQUEST_URL,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify(payload),
+        redirect:'follow'
+      });
+      console.info('[Regal Booking] HTTP status:',response.status,'Content-Type:',response.headers.get('content-type'));
+      if(!response.ok)throw new Error('HTTP '+response.status+' from booking endpoint');
+      const responseText=await response.text();
+      let result;
+      try{result=JSON.parse(responseText)}
+      catch(parseError){throw new Error('Non-JSON response from booking endpoint (possible redirect or access page)')}
+      if(result.success!==true){
+        serverRejected=true;
+        const serverMessage=String(result.message||result.error||'Booking rejected by backend').slice(0,180);
+        throw new Error('Server rejected request: '+serverMessage);
+      }
+      if(!result.bookingId || !['pending','pending approval','waiting for approval'].includes(String(result.status||'').toLowerCase())){
+        throw new Error('Unexpected booking response: missing booking ID or Pending status');
+      }
       dialogBody.replaceChildren();
       dialogBody.append(element('p','booking-subtitle',property.name));
       const waiting=element('div','booking-wait');
       waiting.append(element('div','booking-clock','◷'),element('h3','','Waiting for Approval'),element('p','','Your booking request has been received. The property owner will review it. This is not a confirmed reservation.'));
       waiting.append(element('div','booking-reference','Booking reference: '+String(result.bookingId)));
       const done=element('div','booking-actions');const close=element('button','booking-confirm','Close');close.type='button';close.onclick=closeDialog;done.append(close);waiting.append(done);dialogBody.append(waiting);
-    }catch(err){feedback.className='booking-feedback error';feedback.textContent='Unable to submit the booking. Please try again later. No approval has been confirmed.';}
-    finally{confirm.disabled=false;confirm.textContent='Confirm';}
+    }catch(err){
+      console.error('[Regal Booking] Submission diagnostic:',err);
+      feedback.className='booking-feedback error';
+      const detail=err instanceof Error ? err.message : String(err);
+      if(serverRejected){
+        feedback.textContent=detail+'. No booking was accepted by the server.';
+      }else{
+        feedback.textContent='Booking could not be verified ('+detail+'). Check the Bookings sheet before retrying: the request may have reached the server.';
+      }
+      // Avoid accidental duplicate submissions if a response was lost.
+      if(requestMayHaveReachedServer && !serverRejected){
+        confirm.disabled=true;
+        confirm.textContent='Check Bookings Sheet';
+      }
+    }finally{
+      if(!confirm.disabled || serverRejected){confirm.disabled=false;confirm.textContent='Confirm';}
+    }
   };
 }
 
@@ -427,7 +469,13 @@ function makePropertyCard(property) {
     const displayUnit={...unit,name:unit.name,description:unit.description || '',
       hourly:money(unit.hourlyRate),monthly:money(unit.monthlyRate),status:unit.status || (hasPublishedUnits?'To be updated':'Not yet published')};
     view.onclick=()=>showDetails(property,displayUnit);
-    book.onclick=()=>showBooking(property,displayUnit);
+    const canBook=hasPublishedUnits && !!(unit.unitId||unit.id) &&
+      !!(property.propertyId||property.id) &&
+      ['available','vacant','open'].includes(normalizedStatus) &&
+      Number(unit.hourlyRate)>0;
+    book.disabled=!canBook;
+    book.title=canBook?'Request a booking':'Booking is available only for published, available units with a valid hourly rate';
+    book.onclick=canBook?()=>showBooking(property,displayUnit):null;
     rebuildPhotos();
   }
   let startX=null;
