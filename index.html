@@ -98,6 +98,16 @@
 .booking-reference{font-size:12px;background:#f0f1ef;padding:13px;border-radius:9px;overflow-wrap:anywhere}
 @media(max-width:390px){.booking-dialog #dialogTitle{font-size:29px}.booking-dialog #dialogBody{padding-left:17px;padding-right:17px}.booking-subtitle{margin-left:-17px!important;margin-right:-17px!important;padding-left:17px;padding-right:17px}}
 @media(prefers-reduced-motion:reduce){.dialog-backdrop.open .dialog{animation:none}}
+/* Five reusable photo slots per unit for Regal Homes and The Regal Rooms. */
+.gallery-frame{position:absolute;inset:0;opacity:0;transition:opacity 650ms ease;pointer-events:none}
+.gallery-frame.active{opacity:1;z-index:1}
+.gallery-frame .gallery-image{opacity:0;transform:scale(1.045)}
+.gallery-frame.has-photo .gallery-image{opacity:1;transform:scale(1)}
+.gallery-photo-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;background:linear-gradient(145deg,#e9edf1,#d6dfe7);color:#63758a;text-align:center;font-family:'DM Sans',Arial,sans-serif;font-size:12px;letter-spacing:1.2px}
+.gallery-photo-placeholder svg{width:38px;height:38px;opacity:.5}
+.gallery-photo-placeholder small{font-size:12px;letter-spacing:0;text-transform:none}
+.gallery-frame.has-photo .gallery-photo-placeholder{display:none}
+@media(prefers-reduced-motion:reduce){.gallery-frame{transition:none}}
 </style>
 </head>
 <body>
@@ -122,8 +132,8 @@ const LOCAL_PROPERTIES=[
     (_, i) => `${i + 1}.jpg`
   )
 },
-{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',units:2,photos:[]},
-{slug:'regal-rooms',name:'The Regal Rooms',owner:'Francis Regal',type:'3-Storey Building',units:3},
+{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',logo:'Regal Homes logo.jpg',units:2,photoSlots:5},
+{slug:'regal-rooms',name:'The Regal Rooms',owner:'Francis Regal',type:'3-Storey Building',logo:'The Regal Rooms Logo.png',units:3,photoSlots:5},
 {slug:'chivas-residence',name:'Chivas Residence by The Regal Rooms',owner:'Francis Regal',type:'Studio Type',units:2},
 {slug:'juanlager-apartment',name:'JuanLager Apartment',owner:'JuanLager Apartment',type:'Studio Type',units:2}
 ];
@@ -351,12 +361,12 @@ function makePropertyCard(property) {
 
   const hasPublishedUnits=Array.isArray(property.units) && property.units.length>0;
   const isHomestay=local && local.slug==='regal-homestay';
-  if (!hasPublishedUnits && !isHomestay) {
+  if (!hasPublishedUnits && !local?.photoSlots && !isHomestay) {
     section.append(element('p','empty-units','No published units yet.'));
     return section;
   }
 
-  // Verified unit data comes only from the public API.
+  // Verified unit data comes only from the public API. Book Now submits to the same Apps Script backend used by the owner app.
   // The existing GitHub images remain static until photo management is added.
   const units = hasPublishedUnits ? property.units : [{name:property.name,description:'Explore our photo gallery. Unit information and rental rates will be published soon.',hourlyRate:null,monthlyRate:null,status:'Not yet published'}];
   let unitIndex = 0;
@@ -402,6 +412,7 @@ function makePropertyCard(property) {
    let photoIndex=0, photos=[], dotButtons=[];
    function photoPaths() {
      if (!local) return [];
+     if (local.photoSlots) return Array.from({length:local.photoSlots},(_,i)=>`images/${local.slug}-unit-${unitIndex+1}-photo-${i+1}.jpg`);
      // Each property uses the same gallery. Optional photo lists are configured above.
      // Existing Homestay filenames (1.jpg ... 15.jpg) remain unchanged.
      if (Array.isArray(local.photos) && local.photos.length) return local.photos;
@@ -427,21 +438,23 @@ function makePropertyCard(property) {
      photos=[]; dotButtons=[]; dots.replaceChildren();
      const paths=photoPaths();
      paths.forEach((path,i)=>{
+       const frame=element('div','gallery-frame');
+       const empty=element('div','gallery-photo-placeholder');
+       empty.innerHTML=icon;
+       empty.append(element('span','',`UNIT ${unitIndex+1} · PHOTO ${i+1} OF ${paths.length}`));
+       empty.append(element('small','','Photo coming soon'));
+       frame.append(empty);
        const img=document.createElement('img');
        img.className='gallery-image';
        img.src=path;
-       img.alt=property.name+' photo '+(i+1);
+       img.alt=property.name+' unit '+(unitIndex+1)+' photo '+(i+1);
        img.loading=i<2?'eager':'lazy';
        img.decoding='async';
-       img.onerror=()=>{
-         img.classList.remove('active');
-         if(i===photoIndex){
-           const next=photos.findIndex((p,j)=>j!==i && p.complete && p.naturalWidth>0);
-           if(next>=0)go(next);
-         }
-       };
-       gallery.append(img); photos.push(img);
-       if (paths.length>1) {
+       img.onload=()=>{frame.classList.add('has-photo')};
+       img.onerror=()=>{frame.classList.remove('has-photo');img.hidden=true};
+       frame.append(img);
+       gallery.append(frame);photos.push(frame);
+       if(paths.length>1){
          const dot=element('button','gallery-dot');
          dot.type='button';
          dot.setAttribute('aria-label','Photo '+(i+1));
