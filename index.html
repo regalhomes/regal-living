@@ -194,9 +194,7 @@ function showDetails(property,unit){
 }
 // The public booking endpoint must be separately implemented server-side.
 // Leave blank until Apps Script validates bookings, saves Pending records and checks conflicts.
-
 const BOOKING_REQUEST_URL = PUBLIC_API_URL;
-
 function showBooking(property,unit){
   dialogBody.replaceChildren();
   backdrop.querySelector('.dialog').classList.add('booking-dialog');
@@ -261,9 +259,7 @@ function showBooking(property,unit){
       return;
     }
     // The endpoint must enforce owner authorization, conflict checks, rate validation and anti-spam.
-    const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guestEmail:email.input.value.trim(),
-checkIn:date.input.value+'T'+time.input.value
-,durationHours:Number(duration.value),notes:notes.input.value.trim()};
+    const payload={action:'createPublicBookingRequest',propertyId:property.id||property.propertyId||'',unitId:unit.id||unit.unitId||'',propertyName:property.name,unitName:unit.name,guestName:name.input.value.trim(),guescheckIn:date.input.value+'T'+time.input.value()tEmail:email.input.value.trim(),,durationHours:Number(duration.value),notes:notes.input.value.trim()};
     confirm.disabled=true;confirm.textContent='Submitting…';feedback.textContent='Sending your request…';
     try{
       const response=await fetch(BOOKING_REQUEST_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
