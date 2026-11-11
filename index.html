@@ -410,6 +410,25 @@ function makePropertyCard(property) {
   section.append(gallery,details,dots);
 
    let photoIndex=0, photos=[], dotButtons=[];
+   const AUTO_SLIDE_MS = 3000;
+   let autoSlideTimer = null;
+   function stopAutoSlide() {
+     if (autoSlideTimer !== null) clearInterval(autoSlideTimer);
+     autoSlideTimer = null;
+   }
+   function startAutoSlide() {
+     stopAutoSlide();
+     if (photos.length < 2 || !section.isConnected) return;
+     autoSlideTimer = setInterval(() => {
+       if (!section.isConnected) { stopAutoSlide(); return; }
+       if (document.hidden) return;
+       go(photoIndex + 1);
+     }, AUTO_SLIDE_MS);
+   }
+   function manuallyGo(index) {
+     go(index);
+     startAutoSlide(); // Allow a full 3 seconds after a manual swipe or dot click.
+   }
    function photoPaths() {
      if (!local) return [];
      if (local.photoSlots) return Array.from({length:local.photoSlots},(_,i)=>`images/${local.slug}-unit-${unitIndex+1}-photo-${i+1}.jpg`);
@@ -434,6 +453,7 @@ function makePropertyCard(property) {
      });
    }
    function rebuildPhotos() {
+     stopAutoSlide();
      photos.forEach(p=>p.remove());
      photos=[]; dotButtons=[]; dots.replaceChildren();
      const paths=photoPaths();
@@ -458,11 +478,12 @@ function makePropertyCard(property) {
          const dot=element('button','gallery-dot');
          dot.type='button';
          dot.setAttribute('aria-label','Photo '+(i+1));
-         dot.onclick=()=>go(i);
+         dot.onclick=()=>manuallyGo(i);
          dots.append(dot);dotButtons.push(dot);
        }
      });
      photoIndex=0;go(0);
+     queueMicrotask(startAutoSlide);
    }
   function updateUnit() {
     const unit=units[unitIndex];
@@ -498,7 +519,7 @@ function makePropertyCard(property) {
   gallery.addEventListener('touchend',e=>{
     if(startX===null)return;
     const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>45)go(photoIndex+(dx<0?1:-1));
+    if(Math.abs(dx)>45)manuallyGo(photoIndex+(dx<0?1:-1));
     startX=null;
   },{passive:true});
   let mouseX=null;
@@ -506,12 +527,12 @@ function makePropertyCard(property) {
   gallery.addEventListener('mouseup',e=>{
     if(mouseX===null)return;
     const dx=e.clientX-mouseX;
-    if(Math.abs(dx)>45)go(photoIndex+(dx<0?1:-1));
+    if(Math.abs(dx)>45)manuallyGo(photoIndex+(dx<0?1:-1));
     mouseX=null;
   });
   gallery.addEventListener('dragstart',e=>e.preventDefault());
   gallery.tabIndex=0;
-  gallery.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();go(photoIndex+1)}if(e.key==='ArrowLeft'){e.preventDefault();go(photoIndex-1)}});
+  gallery.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();manuallyGo(photoIndex+1)}if(e.key==='ArrowLeft'){e.preventDefault();manuallyGo(photoIndex-1)}});
   updateUnit();
   return section;
 }
