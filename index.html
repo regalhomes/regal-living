@@ -122,10 +122,10 @@ const LOCAL_PROPERTIES=[
     (_, i) => `${i + 1}.jpg`
   )
 },
+{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',units:2,photos:[]},
 {slug:'regal-rooms',name:'The Regal Rooms',owner:'Francis Regal',type:'3-Storey Building',units:3},
 {slug:'chivas-residence',name:'Chivas Residence by The Regal Rooms',owner:'Francis Regal',type:'Studio Type',units:2},
-{slug:'juanlager-apartment',name:'JuanLager Apartment',owner:'JuanLager Apartment',type:'Studio Type',units:2},
-{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',units:2}
+{slug:'juanlager-apartment',name:'JuanLager Apartment',owner:'JuanLager Apartment',type:'Studio Type',units:2}
 ];
 // Paste your deployed Google Apps Script /exec URL below (not /dev).
 const PUBLIC_API_URL = 'https://script.google.com/macros/s/AKfycbygIMXSFD68RCnGOS_J8VnBWcgv_1SoqQI5-ONaHJaSnZNMj5-3Mg6w-kxpqVMUlHm4Cg/exec';
@@ -358,7 +358,7 @@ function makePropertyCard(property) {
 
   // Verified unit data comes only from the public API.
   // The existing GitHub images remain static until photo management is added.
-  const units = hasPublishedUnits ? property.units : [{name:'The Regal Homestay',description:'Explore our photo gallery. Unit information and rental rates will be published soon.',hourlyRate:null,monthlyRate:null,status:'Not yet published'}];
+  const units = hasPublishedUnits ? property.units : [{name:property.name,description:'Explore our photo gallery. Unit information and rental rates will be published soon.',hourlyRate:null,monthlyRate:null,status:'Not yet published'}];
   let unitIndex = 0;
   if (units.length > 1) {
     const selectLabel = element('label','unit-select-label','Choose a unit');
@@ -402,7 +402,9 @@ function makePropertyCard(property) {
    let photoIndex=0, photos=[], dotButtons=[];
    function photoPaths() {
      if (!local) return [];
-     if (local.slug === 'regal-homestay') return local.photos || [];
+     // Each property uses the same gallery. Optional photo lists are configured above.
+     // Existing Homestay filenames (1.jpg ... 15.jpg) remain unchanged.
+     if (Array.isArray(local.photos) && local.photos.length) return local.photos;
      return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
    }
    function go(index) {
@@ -501,18 +503,28 @@ function makePropertyCard(property) {
   return section;
 }
 
-// The Homestay gallery is published from GitHub independently of API unit records.
-// Unit rates and availability are never invented if the API has no data.
+// Property order is fixed for the featured collection, regardless of API row order.
+// All published properties not in the featured list appear afterward.
+// Property and unit facts always come from the public API; local fallback cards
+// show "not yet published" rather than inventing rates or availability.
+const FEATURED_PROPERTY_SLUGS = ['regal-homestay', 'regal-homes', 'regal-rooms'];
 function renderListings(apiProperties=[]) {
   const published=Array.isArray(apiProperties)?apiProperties:[];
-  const homestay=LOCAL_PROPERTIES.find(p=>p.slug==='regal-homestay');
-  const matching=published.find(p=>norm(p.name)===norm(homestay.name));
-  const homestayListing=matching
-    ? {...matching,name:homestay.name,units:Array.isArray(matching.units)?matching.units:[]}
-    : {name:homestay.name,location:'Location to be updated',units:[]};
-  const others=published.filter(p=>norm(p.name)!==norm(homestay.name));
+  const used=new Set();
+  const featured=FEATURED_PROPERTY_SLUGS.map(slug=>{
+    const local=LOCAL_PROPERTIES.find(p=>p.slug===slug);
+    if (!local) return null;
+    const index=published.findIndex(p=>norm(p.name)===norm(local.name));
+    if (index>=0) {
+      used.add(index);
+      const matching=published[index];
+      return {...matching,name:local.name,units:Array.isArray(matching.units)?matching.units:[]};
+    }
+    return {name:local.name,location:'Location to be updated',units:[]};
+  }).filter(Boolean);
+  const others=published.filter((p,i)=>!used.has(i));
   list.replaceChildren();
-  [homestayListing,...others].forEach(p=>list.append(makePropertyCard(p)));
+  [...featured,...others].forEach(p=>list.append(makePropertyCard(p)));
 }
 
 async function loadListings() {
