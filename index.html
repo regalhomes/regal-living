@@ -100,7 +100,9 @@
 @media(prefers-reduced-motion:reduce){.dialog-backdrop.open .dialog{animation:none}}
 /* Five reusable photo slots per unit for Regal Homes and The Regal Rooms. */
 .gallery-frame{position:absolute;inset:0;opacity:0;transition:opacity 1600ms ease-in-out;pointer-events:none}
-.gallery-frame.active{opacity:1;z-index:1}
+.gallery-frame.active{opacity:1;z-index:2}
+.gallery-frame.exiting{opacity:1;z-index:1;transition:none}
+.gallery.has-frames > .gallery-placeholder{display:none}
 .gallery-frame .gallery-image{opacity:0;transform:scale(1.045)}
 .gallery-frame.has-photo .gallery-image{opacity:1;transform:scale(1)}
 .gallery-photo-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;background:linear-gradient(145deg,#e9edf1,#d6dfe7);color:#63758a;text-align:center;font-family:'DM Sans',Arial,sans-serif;font-size:12px;letter-spacing:1.2px}
@@ -410,6 +412,7 @@ function makePropertyCard(property) {
   section.append(gallery,details,dots);
 
    let photoIndex=0, photos=[], dotButtons=[];
+   let fadeCleanupTimer=null;
    const AUTO_SLIDE_MS = 3000;
    let autoSlideTimer = null;
    function stopAutoSlide() {
@@ -439,12 +442,29 @@ function makePropertyCard(property) {
    }
    function go(index) {
      if (!photos.length) return;
-     photoIndex=(index+photos.length)%photos.length;
-     photos.forEach((p,i)=>{
-       const active=i===photoIndex;
-       p.classList.toggle('active',active);
-       p.setAttribute('aria-hidden',active?'false':'true');
+     const nextIndex=(index+photos.length)%photos.length;
+     const previousIndex=photoIndex;
+     if (fadeCleanupTimer !== null) { clearTimeout(fadeCleanupTimer); fadeCleanupTimer=null; }
+     // Keep the outgoing frame fully visible beneath the incoming frame.
+     // This prevents the gallery's empty-state icon from flashing mid-fade.
+     photos.forEach((frame,i)=>{
+       frame.classList.remove('active','exiting');
+       frame.setAttribute('aria-hidden',i===nextIndex?'false':'true');
      });
+     if (nextIndex !== previousIndex && photos[previousIndex]) {
+       photos[previousIndex].classList.add('exiting');
+     }
+     photoIndex=nextIndex;
+     const incoming=photos[nextIndex];
+     // Force the incoming frame to start at opacity 0 before animating to 1.
+     void incoming.offsetWidth;
+     incoming.classList.add('active');
+     if (nextIndex !== previousIndex) {
+       fadeCleanupTimer=setTimeout(()=>{
+         photos.forEach(frame=>frame.classList.remove('exiting'));
+         fadeCleanupTimer=null;
+       },1650);
+     }
      dotButtons.forEach((d,i)=>{
        const active=i===photoIndex;
        d.classList.toggle('active',active);
@@ -454,6 +474,7 @@ function makePropertyCard(property) {
    }
    function rebuildPhotos() {
      stopAutoSlide();
+     if (fadeCleanupTimer !== null) { clearTimeout(fadeCleanupTimer); fadeCleanupTimer=null; }
      photos.forEach(p=>p.remove());
      photos=[]; dotButtons=[]; dots.replaceChildren();
      const paths=photoPaths();
@@ -482,6 +503,7 @@ function makePropertyCard(property) {
          dots.append(dot);dotButtons.push(dot);
        }
      });
+     gallery.classList.toggle('has-frames',photos.length>0);
      photoIndex=0;go(0);
      queueMicrotask(startAutoSlide);
    }
