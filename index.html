@@ -118,9 +118,8 @@
 <section class="contact" id="contact"><div class="eyebrow">Get in touch</div><h2>Interested in a unit?</h2><p>Contact Regal Living for current availability and confirmed rental rates.</p><button class="btn" type="button" disabled style="border:0;opacity:.65;cursor:not-allowed">HELP DESK · COMING SOON</button></section><footer>© 2026 Regal Living · A Place to Call Home</footer>
 <div class="dialog-backdrop" id="dialogBackdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><button class="close" type="button" id="dialogClose" aria-label="Close">×</button><h2 id="dialogTitle"></h2><div id="dialogBody"></div></section></div>
 <script>
-// Static gallery metadata only. Live units and prices come from the public API.
-// Upload photos under images/ using the filenames defined below.
-// Missing images display the existing placeholders automatically.
+// GitHub images remain as a fallback until the public API supplies unit photo metadata.
+// Public photo metadata must contain a publicly viewable HTTPS Photo_URL.
 const LOCAL_PROPERTIES=[
 {
   slug: 'regal-homestay',
@@ -334,6 +333,7 @@ function showBooking(property,unit){
 const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 18 6-6 4 4 3-3 5 5"/></svg>';
 function element(tag,cls,text){const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;return el}
 const list = document.getElementById('list');
+let publishedUnitPhotos = new Map();
 const money = n => n === null || n === undefined ? 'To be updated' : '₱' + Number(n).toLocaleString('en-PH');
 const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g,'');
 const localFor = p => LOCAL_PROPERTIES.find(c => norm(c.name) === norm(p.name));
@@ -433,10 +433,23 @@ function makePropertyCard(property) {
      startAutoSlide(); // Allow a full 3 seconds after a manual swipe or dot click.
    }
    function photoPaths() {
+     const unit = units[unitIndex];
+     const unitId = String(unit.unitId || unit.id || unit.Unit_ID || '').trim();
+     const fromApi = Array.isArray(unit.photos) ? unit.photos :
+       (publishedUnitPhotos.get(unitId) || []);
+     const dynamicPaths = fromApi
+       .slice()
+       .sort((a,b) => Number(a.Display_Order ?? a.displayOrder ?? 0) - Number(b.Display_Order ?? b.displayOrder ?? 0))
+       .map(photo => typeof photo === 'string' ? photo :
+         (photo.Photo_URL || photo.photoUrl || photo.url || ''))
+       .filter(url => {
+         try { return new URL(url).protocol === 'https:'; }
+         catch (_) { return false; }
+       });
+     if (dynamicPaths.length) return dynamicPaths;
+     // Preserve the original GitHub photos until Drive photo delivery is verified.
      if (!local) return [];
      if (local.photoSlots) return Array.from({length:local.photoSlots},(_,i)=>`images/${local.slug}-unit-${unitIndex+1}-photo-${i+1}.jpg`);
-     // Each property uses the same gallery. Optional photo lists are configured above.
-     // Existing Homestay filenames (1.jpg ... 15.jpg) remain unchanged.
      if (Array.isArray(local.photos) && local.photos.length) return local.photos;
      return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
    }
@@ -584,7 +597,7 @@ function renderListings(apiProperties=[]) {
 }
 
 async function loadListings() {
-  // Render local photos immediately; refresh published unit data when available.
+  // Render local photos immediately; refresh published unit data and photo metadata when available.
   renderListings();
   if (!PUBLIC_API_URL.startsWith('https://script.google.com/macros/s/')) return;
   try {
@@ -592,6 +605,16 @@ async function loadListings() {
     if(!response.ok)throw new Error('HTTP '+response.status);
     const data=await response.json();
     if(!data.success || !Array.isArray(data.properties))throw new Error('Invalid API response');
+    publishedUnitPhotos = new Map();
+    // Optional publicListings response: unitPhotos: [{Unit_ID, Photo_URL, Display_Order}, ...]
+    if (Array.isArray(data.unitPhotos)) {
+      for (const photo of data.unitPhotos) {
+        const id = String(photo.Unit_ID || photo.unitId || '').trim();
+        if (!id) continue;
+        if (!publishedUnitPhotos.has(id)) publishedUnitPhotos.set(id, []);
+        publishedUnitPhotos.get(id).push(photo);
+      }
+    }
     renderListings(data.properties);
   } catch(error) {
     console.error('Regal Living public listings error:',error);
