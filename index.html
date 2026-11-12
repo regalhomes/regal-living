@@ -118,8 +118,8 @@
 <section class="contact" id="contact"><div class="eyebrow">Get in touch</div><h2>Interested in a unit?</h2><p>Contact Regal Living for current availability and confirmed rental rates.</p><button class="btn" type="button" disabled style="border:0;opacity:.65;cursor:not-allowed">HELP DESK · COMING SOON</button></section><footer>© 2026 Regal Living · A Place to Call Home</footer>
 <div class="dialog-backdrop" id="dialogBackdrop"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><button class="close" type="button" id="dialogClose" aria-label="Close">×</button><h2 id="dialogTitle"></h2><div id="dialogBody"></div></section></div>
 <script>
-// GitHub images remain as a fallback until the public API supplies unit photo metadata.
-// Public photo metadata must contain a publicly viewable HTTPS Photo_URL.
+// Unit galleries use only public Google Drive photo URLs from the API.
+// Property logos remain hosted in GitHub; no GitHub unit photo dependency.
 const LOCAL_PROPERTIES=[
 {
   slug: 'regal-homestay',
@@ -127,14 +127,10 @@ const LOCAL_PROPERTIES=[
   owner: 'Henry M. Regal',
   type: 'Airbnb Type',
   logo: 'Logo.jpg',
-  units: 2,
-  photos: Array.from(
-    { length: 15 },
-    (_, i) => `${i + 1}.jpg`
-  )
+  units: 2
 },
-{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',logo:'Regal Homes Logo.jpg',units:2,photoSlots:5},
-{slug:'regal-rooms',name:'The Regal Rooms',owner:'Francis Regal',type:'3-Storey Building',logo:'The Regal Rooms Logo.png',units:3,photoSlots:5},
+{slug:'regal-homes',name:'Regal Homes',owner:'Sonny Angelo Regal',type:'Studio Type',logo:'Regal Homes Logo.jpg',units:2},
+{slug:'regal-rooms',name:'The Regal Rooms',owner:'Francis Regal',type:'3-Storey Building',logo:'The Regal Rooms Logo.png',units:3},
 {slug:'chivas-residence',name:'Chivas Residence by The Regal Rooms',owner:'Francis Regal',type:'Studio Type',units:2},
 {slug:'juanlager-apartment',name:'JuanLager Apartment',owner:'JuanLager Apartment',type:'Studio Type',units:2}
 ];
@@ -363,7 +359,7 @@ function makePropertyCard(property) {
 
   const hasPublishedUnits=Array.isArray(property.units) && property.units.length>0;
   const isHomestay=local && local.slug==='regal-homestay';
-  if (!hasPublishedUnits && !local?.photoSlots && !isHomestay) {
+  if (!hasPublishedUnits && !isHomestay) {
     section.append(element('p','empty-units','No published units yet.'));
     return section;
   }
@@ -446,12 +442,8 @@ function makePropertyCard(property) {
          try { return new URL(url).protocol === 'https:'; }
          catch (_) { return false; }
        });
-     if (dynamicPaths.length) return dynamicPaths;
-     // Preserve the original GitHub photos until Drive photo delivery is verified.
-     if (!local) return [];
-     if (local.photoSlots) return Array.from({length:local.photoSlots},(_,i)=>`images/${local.slug}-unit-${unitIndex+1}-photo-${i+1}.jpg`);
-     if (Array.isArray(local.photos) && local.photos.length) return local.photos;
-     return [`images/${local.slug}-unit-${unitIndex+1}.jpg`];
+     // No local image fallback: a unit with no Drive photos shows a placeholder.
+     return dynamicPaths;
    }
    function go(index) {
      if (!photos.length) return;
@@ -597,7 +589,7 @@ function renderListings(apiProperties=[]) {
 }
 
 async function loadListings() {
-  // Render local photos immediately; refresh published unit data and photo metadata when available.
+  // Render placeholders immediately; refresh published units and Drive photos from API.
   renderListings();
   if (!PUBLIC_API_URL.startsWith('https://script.google.com/macros/s/')) return;
   try {
