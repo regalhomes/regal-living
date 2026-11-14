@@ -294,8 +294,10 @@ function showBooking(property,unit){
       catch(parseError){throw new Error('Non-JSON response from booking endpoint (possible redirect or access page)')}
       if(result.success!==true){
         serverRejected=true;
+        const serverCode=String(result.code||'REQUEST_REJECTED').slice(0,80);
         const serverMessage=String(result.message||result.error||'Booking rejected by backend').slice(0,180);
-        throw new Error('Server rejected request: '+serverMessage);
+        console.error('[Regal Booking] Backend rejection:', {code:serverCode, message:serverMessage});
+        throw new Error('Server rejected request ['+serverCode+']: '+serverMessage);
       }
       if(!result.bookingId || !['pending','pending approval','waiting for approval'].includes(String(result.status||'').toLowerCase())){
         throw new Error('Unexpected booking response: missing booking ID or Pending status');
